@@ -1,18 +1,12 @@
 package com.example.libreriaMarketCatalogService.controller;
 
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.example.libreriaMarketCatalogService.model.Proveedor;
-import com.example.libreriaMarketCatalogService.service.ProveedorService;
-import org.springframework.web.bind.annotation.RequestBody;
-import jakarta.validation.Valid;
+import com.example.libreriaMarketCatalogService.dto.*;
+import com.example.libreriaMarketCatalogService.mappers.*;
+import com.example.libreriaMarketCatalogService.service.*;
 
 @RestController
 @RequestMapping("/api/v1/proveedores")
@@ -24,35 +18,29 @@ public class ProveedorController {
         this.service = service;
     }
 
-    // listar proveedores
     @GetMapping
-    public List<Proveedor> listar() {
-        return service.listar();
+    public List<ProveedorDTO> listar() {
+        return service.listar().stream().map(ProveedorMapper::toDTO).toList();
     }
 
-    // buscar proveedor
     @GetMapping("/{id}")
-    public Proveedor obtener(@PathVariable Long id) {
-        return service.obtenerPorId(id);
+    public ProveedorDTO obtener(@PathVariable Long id) {
+        return ProveedorMapper.toDTO(service.obtener(id));
     }
 
     @PostMapping
-    public String crear(@Valid @RequestBody Proveedor proveedor) {
-    service.guardar(proveedor);
-    return "Proveedor creado correctamente";
+    public ProveedorDTO crear(@Valid @RequestBody ProveedorDTO dto) {
+        return ProveedorMapper.toDTO(service.guardar(ProveedorMapper.toEntity(dto)));
     }
 
-    // actualizar
     @PutMapping("/{id}")
-    public String actualizar(@PathVariable Long id, @Valid @RequestBody Proveedor proveedor) {
-        service.actualizar(id, proveedor);
-        return "Proveedor actualizado";
+    public ProveedorDTO actualizar(@PathVariable Long id, @Valid @RequestBody ProveedorDTO dto) {
+        return ProveedorMapper.toDTO(service.actualizar(id, ProveedorMapper.toEntity(dto)));
     }
 
-    // eliminar
     @DeleteMapping("/{id}")
     public String eliminar(@PathVariable Long id) {
-        return service.eliminar(id);
+        service.eliminar(id);
+        return "Proveedor eliminado";
     }
-
 }

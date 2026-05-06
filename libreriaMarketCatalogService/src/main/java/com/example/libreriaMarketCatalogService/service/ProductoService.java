@@ -1,101 +1,89 @@
 package com.example.libreriaMarketCatalogService.service;
 
 import org.springframework.stereotype.Service;
-import com.example.libreriaMarketCatalogService.repository.ProductoRepository;
-import com.example.libreriaMarketCatalogService.repository.ProveedorRepository;
-import com.example.libreriaMarketCatalogService.model.Producto;
-import com.example.libreriaMarketCatalogService.model.Proveedor;
-
 import java.util.List;
+
+import com.example.libreriaMarketCatalogService.model.*;
+import com.example.libreriaMarketCatalogService.repository.*;
+import com.example.libreriaMarketCatalogService.exceptions.*;
 
 @Service
 public class ProductoService {
 
-    private final ProductoRepository repository;
-    private final ProveedorRepository proveedorRepository;
+    private final ProductoRepository repo;
+    private final ProveedorRepository proveedorRepo;
 
-    public ProductoService(ProductoRepository repository, ProveedorRepository proveedorRepository) {
-        this.repository = repository;
-        this.proveedorRepository = proveedorRepository;
+    public ProductoService(ProductoRepository repo, ProveedorRepository proveedorRepo) {
+        this.repo = repo;
+        this.proveedorRepo = proveedorRepo;
     }
 
-    // listar todos los productos
     public List<Producto> listar() {
-        return repository.findAll();
+        return repo.findAll();
     }
 
-    // buscar producto por ID
-    public Producto obtenerPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+    public Producto obtener(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Producto no encontrado"));
     }
 
-    // crear producto
-    public Producto guardar(Producto producto) {
+    public Producto guardar(Producto p, Long proveedorId) {
 
-        // validar duplicado por ISBN
-        if (repository.findByIsbn(producto.getIsbn()).isPresent()) {
-            throw new RuntimeException("Ya existe un producto con ese ISBN");
+        if (repo.findByIsbn(p.getIsbn()).isPresent()) {
+            throw new BadRequestException("Ya existe un producto con ese ISBN");
         }
 
-        // validar proveedor
-        if (producto.getProveedor() == null || producto.getProveedor().getId() == null) {
-            throw new RuntimeException("Debe asignar un proveedor");
-        }
+        Proveedor proveedor = proveedorRepo.findById(proveedorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Proveedor no existe"));
 
-        Proveedor proveedor = proveedorRepository.findById(producto.getProveedor().getId())
-                .orElseThrow(() -> new RuntimeException("Proveedor no existe"));
-
-        producto.setProveedor(proveedor);
-
-        return repository.save(producto);
+        p.setProveedor(proveedor);
+        return repo.save(p);
     }
 
-    // actualizar producto
-    public Producto actualizar(Long id, Producto producto) {
+    public Producto actualizar(Long id, Producto p, Long proveedorId) {
 
-        Producto existente = obtenerPorId(id);
+        Producto existente = obtener(id);
 
-        // validar proveedor
-        Proveedor proveedor = proveedorRepository.findById(producto.getProveedor().getId())
-                .orElseThrow(() -> new RuntimeException("Proveedor no existe"));
+        repo.findByIsbn(p.getIsbn())
+                .filter(prod -> !prod.getId().equals(id))
+                .ifPresent(prod -> {
+                    throw new BadRequestException("ISBN ya registrado");
+                });
 
-        existente.setTitulo(producto.getTitulo());
-        existente.setAutor(producto.getAutor());
-        existente.setEditorial(producto.getEditorial());
-        existente.setCategoria(producto.getCategoria());
-        existente.setAnioPublicacion(producto.getAnioPublicacion());
-        existente.setPrecio(producto.getPrecio());
-        existente.setStock(producto.getStock());
-        existente.setIsbn(producto.getIsbn());
-        existente.setDescripcion(producto.getDescripcion());
+        Proveedor proveedor = proveedorRepo.findById(proveedorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Proveedor no existe"));
+
+        existente.setTitulo(p.getTitulo());
+        existente.setAutor(p.getAutor());
+        existente.setEditorial(p.getEditorial());
+        existente.setCategoria(p.getCategoria());
+        existente.setAnioPublicacion(p.getAnioPublicacion());
+        existente.setPrecio(p.getPrecio());
+        existente.setStock(p.getStock());
+        existente.setIsbn(p.getIsbn());
+        existente.setDescripcion(p.getDescripcion());
         existente.setProveedor(proveedor);
 
-        return repository.save(existente);
+        return repo.save(existente);
     }
 
-    // eliminar producto
-    public String eliminar(Long id) {
-        Producto producto = obtenerPorId(id);
-        repository.delete(producto);
-        return "Producto eliminado";
+    public void eliminar(Long id) {
+        repo.delete(obtener(id));
     }
 
-    // comprar producto (resta stock)
     public Producto comprar(Long id, int cantidad) {
 
-        Producto producto = obtenerPorId(id);
-
         if (cantidad <= 0) {
-            throw new RuntimeException("Cantidad inválida");
+            throw new BadRequestException("Cantidad inválida");
         }
 
-        if (producto.getStock() < cantidad) {
-            throw new RuntimeException("No hay suficiente stock");
+        Producto p = obtener(id);
+
+        if (p.getStock() < cantidad) {
+            throw new BadRequestException("Stock insuficiente");
         }
 
-        producto.setStock(producto.getStock() - cantidad);
-
-        return repository.save(producto);
+        p.setStock(p.getStock() - cantidad);
+        return repo.save(p);
     }
 }
