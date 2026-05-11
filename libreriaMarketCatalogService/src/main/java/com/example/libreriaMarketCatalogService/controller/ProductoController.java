@@ -1,5 +1,6 @@
 package com.example.libreriaMarketCatalogService.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -12,6 +13,7 @@ import com.example.libreriaMarketCatalogService.service.*;
 @RequestMapping("/api/v1/productos")
 public class ProductoController {
 
+    @Autowired
     private final ProductoService service;
 
     public ProductoController(ProductoService service) {
