@@ -59,7 +59,7 @@ public class ProductoService {
         existente.setCategoria(p.getCategoria());
         existente.setAnioPublicacion(p.getAnioPublicacion());
         existente.setPrecio(p.getPrecio());
-        existente.setStock(p.getStock());
+//        existente.setStock(p.getStock());
         existente.setIsbn(p.getIsbn());
         existente.setDescripcion(p.getDescripcion());
         existente.setProveedor(proveedor);
@@ -71,19 +71,19 @@ public class ProductoService {
         repo.delete(obtener(id));
     }
 
-    public Producto comprar(Long id, int cantidad) {
-
-        if (cantidad <= 0) {
-            throw new BadRequestException("Cantidad inválida");
-        }
-
-        Producto p = obtener(id);
-
-        if (p.getStock() < cantidad) {
-            throw new BadRequestException("Stock insuficiente");
-        }
-
-        p.setStock(p.getStock() - cantidad);
-        return repo.save(p);
-    }
+//    public Producto comprar(Long id, int cantidad) {
+//
+//        if (cantidad <= 0) {
+//            throw new BadRequestException("Cantidad inválida");
+//        }
+//
+//        Producto p = obtener(id);
+//
+//        if (p.getStock() < cantidad) {
+//            throw new BadRequestException("Stock insuficiente");
+//        }
+//
+//        p.setStock(p.getStock() - cantidad);
+//        return repo.save(p);
+//    }
 }

@@ -57,8 +57,8 @@ public class ProductoController {
         return "Producto eliminado";
     }
 
-    @PostMapping("/{id}/comprar")
-    public ProductoDTO comprar(@PathVariable Long id, @RequestParam int cantidad) {
-        return ProductoMapper.toDTO(service.comprar(id, cantidad));
-    }
+//    @PostMapping("/{id}/comprar")
+//    public ProductoDTO comprar(@PathVariable Long id, @RequestParam int cantidad) {
+//        return ProductoMapper.toDTO(service.comprar(id, cantidad));
+//    }
 }

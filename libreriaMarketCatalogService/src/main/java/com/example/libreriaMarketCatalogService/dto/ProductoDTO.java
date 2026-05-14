@@ -28,8 +28,8 @@ public class ProductoDTO {
     @NotNull @Positive
     private Double precio;
 
-    @NotNull @Min(0)
-    private Integer stock;
+//    @NotNull @Min(0)
+//    private Integer stock;
 
     @NotBlank
     private String isbn;

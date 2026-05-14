@@ -15,7 +15,7 @@ public class ProductoMapper {
         dto.setCategoria(p.getCategoria());
         dto.setAnioPublicacion(p.getAnioPublicacion());
         dto.setPrecio(p.getPrecio());
-        dto.setStock(p.getStock());
+//        dto.setStock(p.getStock());
         dto.setIsbn(p.getIsbn());
         dto.setDescripcion(p.getDescripcion());
 
@@ -37,7 +37,7 @@ public class ProductoMapper {
         p.setCategoria(dto.getCategoria());
         p.setAnioPublicacion(dto.getAnioPublicacion());
         p.setPrecio(dto.getPrecio());
-        p.setStock(dto.getStock());
+//        p.setStock(dto.getStock());
         p.setIsbn(dto.getIsbn());
         p.setDescripcion(dto.getDescripcion());
 

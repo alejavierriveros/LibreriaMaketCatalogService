@@ -21,7 +21,7 @@ INSERT INTO productos (
     categoria,
     anio_publicacion,
     precio,
-    stock,
+--     stock,
     isbn,
     descripcion,
     proveedor_id
@@ -32,7 +32,7 @@ INSERT INTO productos (
     'Programación',
     2008,
     15000,
-    10,
+--     10,
     '123456',
     'Libro clásico',
     1

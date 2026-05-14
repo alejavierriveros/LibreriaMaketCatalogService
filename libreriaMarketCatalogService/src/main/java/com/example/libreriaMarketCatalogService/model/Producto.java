@@ -21,7 +21,7 @@ public class Producto {
     private String categoria;
     private Integer anioPublicacion;
     private Double precio;
-    private Integer stock;
+//    private Integer stock;
     private String isbn;
     private String descripcion;
 
