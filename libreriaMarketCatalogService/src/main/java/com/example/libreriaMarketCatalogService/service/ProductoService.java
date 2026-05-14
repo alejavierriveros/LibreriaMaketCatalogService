@@ -1,11 +1,13 @@
 package com.example.libreriaMarketCatalogService.service;
 
+import org.springframework.instrument.classloading.jboss.JBossLoadTimeWeaver;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 import com.example.libreriaMarketCatalogService.model.*;
 import com.example.libreriaMarketCatalogService.repository.*;
 import com.example.libreriaMarketCatalogService.exceptions.*;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProductoService {
@@ -18,10 +20,12 @@ public class ProductoService {
         this.proveedorRepo = proveedorRepo;
     }
 
+    @Transactional(readOnly = true)
     public List<Producto> listar() {
         return repo.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Producto obtener(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Producto no encontrado"));
@@ -39,6 +43,12 @@ public class ProductoService {
         p.setProveedor(proveedor);
         return repo.save(p);
     }
+
+    @Transactional(readOnly = true)
+    public Boolean existsById(Long id) {
+        return repo.existsById(id);
+    }
+
 
     public Producto actualizar(Long id, Producto p, Long proveedorId) {
 
