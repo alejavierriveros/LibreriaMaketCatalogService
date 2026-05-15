@@ -1,14 +1,14 @@
 package com.example.libreriaMarketCatalogService.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductoDTO {
-
-    private Long id;
+public class ProductoInputDTO {
 
     @NotBlank(message = "Título obligatorio")
     private String titulo;

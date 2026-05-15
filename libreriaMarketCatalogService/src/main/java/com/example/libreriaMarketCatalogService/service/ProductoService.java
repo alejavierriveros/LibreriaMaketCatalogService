@@ -1,6 +1,8 @@
 package com.example.libreriaMarketCatalogService.service;
 
-import org.springframework.instrument.classloading.jboss.JBossLoadTimeWeaver;
+import com.example.libreriaMarketCatalogService.dto.ProductoInputDTO;
+import com.example.libreriaMarketCatalogService.dto.ProductoResponseDTO;
+import com.example.libreriaMarketCatalogService.mappers.ProductoMapper;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -31,17 +33,17 @@ public class ProductoService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Producto no encontrado"));
     }
 
-    public Producto guardar(Producto p, Long proveedorId) {
+    public ProductoResponseDTO guardar(ProductoInputDTO dto) {
 
-        if (repo.findByIsbn(p.getIsbn()).isPresent()) {
+        if (repo.findByIsbn(dto.getIsbn()).isPresent()) {
             throw new BadRequestException("Ya existe un producto con ese ISBN");
         }
 
-        Proveedor proveedor = proveedorRepo.findById(proveedorId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Proveedor no existe"));
+        if (!proveedorRepo.existsById(dto.getProveedorId())){
+                throw new RecursoNoEncontradoException("Proveedor no existe");
+        }
 
-        p.setProveedor(proveedor);
-        return repo.save(p);
+        return ProductoMapper.toDto(repo.save(ProductoMapper.toEntity(dto)));
     }
 
     @Transactional(readOnly = true)

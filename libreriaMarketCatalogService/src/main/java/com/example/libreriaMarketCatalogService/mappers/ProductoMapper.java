@@ -1,12 +1,13 @@
 package com.example.libreriaMarketCatalogService.mappers;
 
-import com.example.libreriaMarketCatalogService.dto.ProductoDTO;
+import com.example.libreriaMarketCatalogService.dto.ProductoInputDTO;
+import com.example.libreriaMarketCatalogService.dto.ProductoResponseDTO;
 import com.example.libreriaMarketCatalogService.model.Producto;
 
 public class ProductoMapper {
 
-    public static ProductoDTO toDTO(Producto p) {
-        ProductoDTO dto = new ProductoDTO();
+    public static ProductoResponseDTO toDto(Producto p) {
+        ProductoResponseDTO dto = new ProductoResponseDTO();
 
         dto.setId(p.getId());
         dto.setTitulo(p.getTitulo());
@@ -27,10 +28,10 @@ public class ProductoMapper {
         return dto;
     }
 
-    public static Producto toEntity(ProductoDTO dto) {
+    public static Producto toEntity(ProductoInputDTO dto) {
         Producto p = new Producto();
 
-        p.setId(dto.getId());
+
         p.setTitulo(dto.getTitulo());
         p.setAutor(dto.getAutor());
         p.setEditorial(dto.getEditorial());

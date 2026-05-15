@@ -22,32 +22,28 @@ public class ProductoController {
     }
 
     @GetMapping
-    public List<ProductoDTO> listar() {
-        return service.listar().stream().map(ProductoMapper::toDTO).toList();
+    public List<ProductoResponseDTO> listar() {
+        return service.listar().stream().map(ProductoMapper::toDto).toList();
     }
 
     @GetMapping("/{id}")
-    public ProductoDTO obtener(@PathVariable Long id) {
-        return ProductoMapper.toDTO(service.obtener(id));
+    public ProductoResponseDTO obtener(@PathVariable Long id) {
+        return ProductoMapper.toDto(service.obtener(id));
     }
 
     @GetMapping("/exists-by-id/{id}")
     public ResponseEntity<Boolean> existsById(@PathVariable Long id) {
         return ResponseEntity.ok(service.existsById(id));
     }
+
     @PostMapping
-    public ProductoDTO crear(@Valid @RequestBody ProductoDTO dto) {
-        return ProductoMapper.toDTO(
-                service.guardar(
-                        ProductoMapper.toEntity(dto),
-                        dto.getProveedorId()
-                )
-        );
+    public ProductoResponseDTO crear(@Valid @RequestBody ProductoInputDTO dto) {
+        return service.guardar(dto);
     }
 
     @PutMapping("/{id}")
-    public ProductoDTO actualizar(@PathVariable Long id, @Valid @RequestBody ProductoDTO dto) {
-        return ProductoMapper.toDTO(
+    public ProductoResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody ProductoInputDTO dto) {
+        return ProductoMapper.toDto(
                 service.actualizar(
                         id,
                         ProductoMapper.toEntity(dto),
@@ -63,7 +59,7 @@ public class ProductoController {
     }
 
 //    @PostMapping("/{id}/comprar")
-//    public ProductoDTO comprar(@PathVariable Long id, @RequestParam int cantidad) {
+//    public ProductoResponseDTO comprar(@PathVariable Long id, @RequestParam int cantidad) {
 //        return ProductoMapper.toDTO(service.comprar(id, cantidad));
 //    }
 }
