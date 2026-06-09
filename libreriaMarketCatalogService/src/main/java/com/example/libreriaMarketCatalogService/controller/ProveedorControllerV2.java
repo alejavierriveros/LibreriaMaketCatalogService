@@ -14,12 +14,19 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v2/proveedores")
@@ -55,16 +62,17 @@ public class ProveedorControllerV2 {
         }
     )
     @Operation(summary = "Lista todos", description = "Muestra todos los registros de proveedores")
-    @GetMapping
-    public ResponseEntity<List<ProveedorDTO.Response>> listar() {
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<CollectionModel<EntityModel<ProveedorDTO.Response>>> listar() {
         String logMsgRequest = "Recibiendo solicitud para buscar listado de proveedores.";
         String logMsg = "Solicitud para buscar listado de proveedores";
         logger.info(logMsgRequest);
-        List<ProveedorDTO.Response> listadoDTOs = service.listar();
+        List<EntityModel<ProveedorDTO.Response>> listadoDTOs = service.listar().stream().map(assembler::toModel).collect(Collectors.toList());
 
         if(!listadoDTOs.isEmpty()){
                 logger.info(logMsg + "-> encontrado(s) y listado(s)");
-                return ResponseEntity.ok(listadoDTOs);
+                return ResponseEntity.ok(CollectionModel.of(listadoDTOs, 
+                        linkTo(methodOn(ProveedorControllerV2.class).listar()).withSelfRel()));
         }
         logger.info(logMsg + "-> sin coincidencias");
         return ResponseEntity.noContent().build();
@@ -92,8 +100,8 @@ public class ProveedorControllerV2 {
         }
     )
     @Operation(summary = "Busca por ID", description = "Encuentra proveedor por ID")
-    @GetMapping("/{id}")
-    public ResponseEntity<ProveedorDTO.Response> obtener(@PathVariable Long id) {
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<ProveedorDTO.Response>> obtener(@PathVariable Long id) {
         String logMsgRequest = "Recibiendo solicitud para buscar proveedor por ID: " + id + ".";
         String logMsg = "Solicitud para buscar proveedor por ID: " + id + ".";
         logger.info(logMsgRequest);
@@ -102,7 +110,7 @@ public class ProveedorControllerV2 {
 
         if(dto != null){
                 logger.info(logMsg + "-> encontrado");
-                return ResponseEntity.ok(dto);
+                return ResponseEntity.ok(assembler.toModel(dto));
         }
 
         logger.info(logMsg + "-> no encontrado");
@@ -132,21 +140,21 @@ public class ProveedorControllerV2 {
         }
     )
     @Operation(summary = "Crea registro proveedor", description = "Guarda nuevo proveedor")
-    @PostMapping
-    public ResponseEntity<ProveedorDTO.Response> crear(@Valid @RequestBody ProveedorDTO.Request dto) {
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<ProveedorDTO.Response>> crear(@Valid @RequestBody ProveedorDTO.Request dto) {
         String logMsgRequest = "Recibiendo solicitud para crear proveedor";
         String logMsg = "Solicitud para crear proveedor";
         logger.info(logMsgRequest);
 
         ProveedorDTO.Response created = service.guardar(dto);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(created.getId()).toUri();
+        URI location = linkTo(methodOn(ProveedorControllerV2.class).obtener(created.getId())).toUri();
 
         logger.info(logMsg + "-> creado con ID Proveedor: {}, Nombre {}, Contacto {}", 
                                                                                 created.getId(),
                                                                                 created.getNombre(),
                                                                                 created.getContacto());
 
-        return ResponseEntity.created(location).body(created);
+        return ResponseEntity.created(location).body(assembler.toModel(created));
     }
 
     @ApiResponses(value = {
@@ -171,8 +179,8 @@ public class ProveedorControllerV2 {
         }
     )
     @Operation(summary = "Actualizar informacion", description = "Actualiza datos de proveedor encontrado por ID")
-    @PutMapping("/{id}")
-    public ResponseEntity<ProveedorDTO.Response> actualizar(@PathVariable Long id, @Valid @RequestBody ProveedorDTO.Request dto) {
+    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<ProveedorDTO.Response>> actualizar(@PathVariable Long id, @Valid @RequestBody ProveedorDTO.Request dto) {
         String logMsgRequest = "Recibiendo solicitud para actualizar proveedor con ID: " + id + ".";
         String logMsg = "Solicitud para actualizar proveedor con ID: " + id + ".";
         logger.info(logMsgRequest);
@@ -183,7 +191,7 @@ public class ProveedorControllerV2 {
 
         logger.info(logMsg + "-> actualizado");
 
-        return ResponseEntity.status(200).location(location).body(updated);
+        return ResponseEntity.status(200).location(location).body(assembler.toModel(updated));
     }
 
     @ApiResponses(value = {
@@ -208,7 +216,7 @@ public class ProveedorControllerV2 {
         }
     )
     @Operation(summary = "Eliminar registro", description = "Borra registro de proveedor")
-    @DeleteMapping("/{id}")
+    @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         String logMsgRequest = "Recibiendo solicitud para borrar proveedor con ID: " + id + ".";
         String logMsg = "Solicitud para borrar proveedor con iD: " + id + ".";

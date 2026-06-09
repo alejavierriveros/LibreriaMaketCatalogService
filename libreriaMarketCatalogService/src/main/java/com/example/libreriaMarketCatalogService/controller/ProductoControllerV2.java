@@ -21,10 +21,11 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,10 +33,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v2/productos")
 public class ProductoControllerV2 {
     
-    private static final Logger logger = LoggerFactory.getLogger(ProductoControllerV2.class.getName());
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductoController.class.getName());
 
     @Autowired
     private ProductoService service;
+
     @Autowired
     private ProductoModelAssembler assembler;
 
@@ -62,15 +65,18 @@ public class ProductoControllerV2 {
     )
     @Operation(summary = "Lista todos", description = "Muestra todos los registros de productos")
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
-    public CollectionModel<EntityModel<ProductoResponseDTO>> listar() {
+    public ResponseEntity<CollectionModel<EntityModel<ProductoResponseDTO>>> listar() {
+        String logMsgRequest = "Recibiendo solicitud para buscar listado de productos.";
+        String logMsg = "Solicitud para buscar listado de productos.";
+        logger.info(logMsgRequest);
+        List<EntityModel<ProductoResponseDTO>> listadoDTO = service.listar().stream().map(assembler::toModel).collect(Collectors.toList());
 
-        List<EntityModel<ProductoResponseDTO>> listadoDTOs = service.listar()
-                                                                    .stream()
-                                                                    .map(assembler::toModel)
-                                                                    .collect(Collectors.toList());
-
-        return CollectionModel.of(listadoDTOs, 
-            linkTo(methodOn(ProductoControllerV2.class).listar()).withSelfRel());
+        if (!listadoDTO.isEmpty()){
+            logger.info(logMsg + "=> encontrado(s) y enlistado(s).");
+            return ResponseEntity.ok(CollectionModel.of(listadoDTO, linkTo(methodOn(ProductoControllerV2.class).listar()).withSelfRel()));
+        }
+        logger.info(logMsg + "=> sin coincidencias (vacío).");
+        return ResponseEntity.noContent().build();
     }
 
     @ApiResponses(value = {
@@ -95,15 +101,15 @@ public class ProductoControllerV2 {
         }
     )
     @Operation(summary = "Busca por ID", description = "Encuentra producto por ID")
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductoResponseDTO> obtener(@PathVariable Long id) {
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<ProductoResponseDTO>> obtener(@PathVariable Long id) {
         String logMsgRequest = "Recibiendo solicitud para buscar producto por ID: " + id + ".";
         String logMsg = "Solicitud para buscar producto por ID: " + id + ".";
         logger.info(logMsgRequest);
         ProductoResponseDTO dto = service.obtener(id);
         if (dto != null){
             logger.info(logMsg + "=> encontrado.");
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(assembler.toModel(dto));
         }
         logger.info(logMsg + "=> no encontrado.");
         return ResponseEntity.notFound().build();
@@ -131,11 +137,10 @@ public class ProductoControllerV2 {
         }
     )
     @Operation(summary = "Valida existencia", description = "Verifica si el producto existe o no según su ID")
-    @GetMapping("/exists-by-id/{id}")
+    @GetMapping(value = "/exists-by-id/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<Boolean> existsById(@PathVariable Long id) {
         return ResponseEntity.ok(service.existsById(id));
     }
-
 
     @ApiResponses(value = {
             @ApiResponse(
@@ -159,12 +164,31 @@ public class ProductoControllerV2 {
         }
     )
     @Operation(summary = "Crea registro producto", description = "Guarda nuevo producto")
-    @PostMapping
-    public ProductoResponseDTO crear(@Valid @RequestBody ProductoInputDTO dto) {
-        return service.guardar(dto);
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<ProductoResponseDTO>> crear(@Valid @RequestBody ProductoInputDTO dto) {
+        String logMsgRequest = "Recibiendo solicitud para crear/guardar producto.";
+        String logMsg = "Solicitud para crear/guardar producto.";
+        logger.info(logMsgRequest);
+        ProductoResponseDTO created = service.guardar(dto);
+        URI location = linkTo(methodOn(ProductoControllerV2.class).obtener(created.getId())).toUri();
+        
+        logger.info(logMsg + 
+            "=> creado con ID Producto: {}, ID Producto: {}, Titulo: {}, Autor: {}, Editorial: {}, Categoria: {}, Anio Publicacion: {}, ISBN: {}, Descripcion: {}, ID Proveedor: {}, Nombre Proveedor: {}", 
+                                                                                                            created.getId(), 
+                                                                                                            created.getTitulo(), 
+                                                                                                            created.getAutor(), 
+                                                                                                            created.getEditorial(),
+                                                                                                            created.getCategoria(),
+                                                                                                            created.getAnioPublicacion(),
+                                                                                                            created.getIsbn(),
+                                                                                                            created.getDescripcion(),
+                                                                                                            created.getProveedorId(),
+                                                                                                            created.getProveedorNombre()
+                                                                                                        );
+        return ResponseEntity.created(location).body(assembler.toModel(created));
     }
 
-    @ApiResponses(value = {
+     @ApiResponses(value = {
             @ApiResponse(
                 responseCode = "200",
                 description = "Producto actualizado",
@@ -186,14 +210,23 @@ public class ProductoControllerV2 {
         }
     )
     @Operation(summary = "Actualizar informacion", description = "Actualiza datos de producto encontrado por ID")
-    @PutMapping("/{id}")
-    public ProductoResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody ProductoInputDTO dto) {
-        return service.actualizar(
-                        id,
-                        ProductoMapper.toEntity(dto),
-                        dto.getProveedorId()
-                );
+    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<ProductoResponseDTO>> actualizar(@PathVariable Long id, @Valid @RequestBody ProductoInputDTO dto) {
+
+        String logMsgRequest = "Recibiendo solicitud para actualizar producto con ID: " + id + ".";
+        String logMsg = "Solicitud para actualizar producto con ID: " + id + ".";
+        logger.info(logMsgRequest);
+        
+        ProductoResponseDTO updated = service.actualizar(id, ProductoMapper.toEntity(dto), dto.getProveedorId());
+        
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(updated.getId()).toUri();
+        //de componentes de constructor URI // de la actual request //ruta de id // sacar la id del obj creado // transformar a URI.
+        
+        logger.info(logMsg + " => actualizado.");
+        return ResponseEntity.status(200).location(location).body(assembler.toModel(updated));
+        //devuelve el estado y la locación //devuelve el objeto creado
     }
+
     @ApiResponses(value = {
             @ApiResponse(
                 responseCode = "204",
@@ -216,9 +249,16 @@ public class ProductoControllerV2 {
         }
     )
     @Operation(summary = "Eliminar registro", description = "Borra registro de producto")
-    @DeleteMapping("/{id}")
-    public String eliminar(@PathVariable Long id) {
-        service.eliminar(id);
-        return "Producto eliminado";
+    @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        String logMsgRequest = "Recibiendo solicitud para borrar producto con ID: " + id + ".";
+        String logMsg = "Solicitud para borrar producto con ID: " + id + ".";
+        logger.info(logMsgRequest);
+        if(service.eliminar(id)){
+            logger.info(logMsg + " => encontrado y borrado.");
+            return ResponseEntity.noContent().build();
+        }
+        logger.info(logMsg + " => no encontrado.");
+        return ResponseEntity.notFound().build();
     }
 }
