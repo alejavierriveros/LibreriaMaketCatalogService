@@ -26,10 +26,6 @@ public class ProductoController {
     @Autowired
     private ProductoService service;
 
-    public ProductoController(ProductoService service) {
-        this.service = service;
-    }
-
     @ApiResponses(value = {
             @ApiResponse(
                 responseCode = "200",

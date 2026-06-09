@@ -1,26 +1,23 @@
 package com.example.libreriaMarketCatalogService.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
-import java.util.List;
-
-import com.example.libreriaMarketCatalogService.dto.*;
-import com.example.libreriaMarketCatalogService.mappers.*;
-import com.example.libreriaMarketCatalogService.service.*;
-
+import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
+import com.example.libreriaMarketCatalogService.mappers.ProveedorMapper;
+import com.example.libreriaMarketCatalogService.service.ProveedorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/proveedores")
-@Tag(name = "Proveedor", description = "Gestion de proveedores")
-public class ProveedorController {
+@RequestMapping("/api/v2/proveedores")
+public class ProveedorControllerV2 {
 
     @Autowired
     private ProveedorService service;
@@ -44,7 +41,7 @@ public class ProveedorController {
                     description = "No se han encontrado el registros",
                     content = @Content(schema = @Schema(hidden = true))
             )
-        }
+    }
     )
     @Operation(summary = "Lista todos", description = "Muestra todos los registros de proveedores")
     @GetMapping
@@ -71,7 +68,7 @@ public class ProveedorController {
                     description = "No se ha encontrado el registro de proveedor",
                     content = @Content(schema = @Schema(hidden = true))
             )
-        }
+    }
     )
     @Operation(summary = "Busca por ID", description = "Encuentra proveedor por ID")
     @GetMapping("/{id}")
@@ -98,7 +95,7 @@ public class ProveedorController {
                     description = "Conflicto al guardar",
                     content = @Content(schema = @Schema(hidden = true))
             )
-        }
+    }
     )
     @Operation(summary = "Crea registro proveedor", description = "Guarda nuevo proveedor")
     @PostMapping
@@ -125,7 +122,7 @@ public class ProveedorController {
                     description = "No se han encontrado registros",
                     content = @Content(schema = @Schema(hidden = true))
             )
-        }
+    }
     )
     @Operation(summary = "Actualizar informacion", description = "Actualiza datos de proveedor encontrado por ID")
     @PutMapping("/{id}")
@@ -152,7 +149,7 @@ public class ProveedorController {
                     description = "No se ha encontrado registro de proveedor",
                     content = @Content(schema = @Schema(hidden = true))
             )
-        }
+    }
     )
     @Operation(summary = "Eliminar registro", description = "Borra registro de proveedor")
     @DeleteMapping("/{id}")

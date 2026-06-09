@@ -3,15 +3,24 @@ package com.example.libreriaMarketCatalogService.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class ProveedorDTO {
 
-    private Long id;
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public class Request{
+        @NotBlank(message = "Nombre obligatorio")
+        private String nombre;
+        private String contacto;
+    }
 
-    @NotBlank(message = "Nombre obligatorio")
-    private String nombre;
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public class Response{
+        private Long id;
+        private String nombre;
+        private String contacto;
+    }
 
-    private String contacto;
 }
