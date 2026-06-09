@@ -1,60 +1,64 @@
 package com.example.libreriaMarketCatalogService.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 import com.example.libreriaMarketCatalogService.model.Proveedor;
 import com.example.libreriaMarketCatalogService.repository.ProveedorRepository;
+import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
 import com.example.libreriaMarketCatalogService.exceptions.*;
+import com.example.libreriaMarketCatalogService.mappers.ProveedorMapper;
 
 @Service
+@Transactional
 public class ProveedorService {
 
-    private final ProveedorRepository repo;
+    @Autowired
+    private ProveedorRepository repo;
 
-    public ProveedorService(ProveedorRepository repo) {
-        this.repo = repo;
+
+    public List<ProveedorDTO.Response> listar() {
+        return repo.findAll().stream().map(ProveedorMapper::toDTO).toList();
     }
 
-    public List<Proveedor> listar() {
-        return repo.findAll();
-    }
-
-    public Proveedor obtener(Long id) {
-        return repo.findById(id)
+    public ProveedorDTO.Response obtener(Long id) {
+        return repo.findById(id).map(ProveedorMapper::toDTO)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Proveedor no encontrado"));
     }
 
-    public Proveedor guardar(Proveedor p) {
+    public ProveedorDTO.Response guardar(ProveedorDTO.Request p) {
 
-        if (p.getNombre() == null || p.getNombre().isBlank()) {
-            throw new BadRequestException("Nombre obligatorio");
-        }
+        Proveedor guardado = new Proveedor();
 
-        if (repo.existsByNombre(p.getNombre())) {
-            throw new BadRequestException("Proveedor ya existe");
-        }
+        guardado.setNombre(p.getNombre());
+        guardado.setContacto(p.getContacto());
+        guardado.setProductos(p.getProductos());
 
-        return repo.save(p);
+        return ProveedorMapper.toDTO(repo.save(guardado));
     }
 
-    public Proveedor actualizar(Long id, Proveedor p) {
+    public ProveedorDTO.Response actualizar(Long id, ProveedorDTO.Request p) {
 
-        Proveedor existente = obtener(id);
-        existente.setNombre(p.getNombre());
-        existente.setContacto(p.getContacto());
+        Proveedor actualizar = repo.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Proveedor no encontrado"));
+        actualizar.setNombre(p.getNombre());
+        actualizar.setContacto(p.getContacto());
+        actualizar.setProductos(p.getProductos());
 
-        return repo.save(existente);
+        return ProveedorMapper.toDTO(repo.save(actualizar));
     }
 
-    public void eliminar(Long id) {
+    public boolean eliminar(Long id) {
 
-        Proveedor proveedor = obtener(id);
+        Proveedor proveedor = repo.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Proveedor no encontrado"));
 
         if (proveedor.getProductos() != null && !proveedor.getProductos().isEmpty()) {
             throw new BadRequestException("No se puede eliminar proveedor con productos asociados");
         }
 
         repo.delete(proveedor);
+        return true;
     }
 }

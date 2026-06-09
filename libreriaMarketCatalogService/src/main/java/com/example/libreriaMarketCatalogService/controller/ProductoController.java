@@ -1,9 +1,15 @@
 package com.example.libreriaMarketCatalogService.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import jakarta.validation.Valid;
+
+import java.net.URI;
 import java.util.List;
 
 import com.example.libreriaMarketCatalogService.dto.*;
@@ -22,6 +28,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api/v1/productos")
 @Tag(name = "Producto", description = "Gestion de productos")
 public class ProductoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductoController.class.getName());
 
     @Autowired
     private ProductoService service;
@@ -49,8 +57,18 @@ public class ProductoController {
     )
     @Operation(summary = "Lista todos", description = "Muestra todos los registros de productos")
     @GetMapping
-    public List<ProductoResponseDTO> listar() {
-        return service.listar().stream().map(ProductoMapper::toDto).toList();
+    public ResponseEntity<List<ProductoResponseDTO>> listar() {
+        String logMsgRequest = "Recibiendo solicitud para buscar listado de productos.";
+        String logMsg = "Solicitud para buscar listado de productos.";
+        logger.info(logMsgRequest);
+        List<ProductoResponseDTO> listadoDTO = service.listar();
+
+        if (!listadoDTO.isEmpty()){
+            logger.info(logMsg + "=> encontrado(s) y enlistado(s).");
+            return ResponseEntity.ok(listadoDTO);
+        }
+        logger.info(logMsg + "=> sin coincidencias (vacío).");
+        return ResponseEntity.noContent().build();
     }
 
     @ApiResponses(value = {
@@ -76,8 +94,17 @@ public class ProductoController {
     )
     @Operation(summary = "Busca por ID", description = "Encuentra producto por ID")
     @GetMapping("/{id}")
-    public ProductoResponseDTO obtener(@PathVariable Long id) {
-        return ProductoMapper.toDto(service.obtener(id));
+    public ResponseEntity<ProductoResponseDTO> obtener(@PathVariable Long id) {
+        String logMsgRequest = "Recibiendo solicitud para buscar producto por ID: " + id + ".";
+        String logMsg = "Solicitud para buscar producto por ID: " + id + ".";
+        logger.info(logMsgRequest);
+        ProductoResponseDTO dto = service.obtener(id);
+        if (dto != null){
+            logger.info(logMsg + "=> encontrado.");
+            return ResponseEntity.ok(dto);
+        }
+        logger.info(logMsg + "=> no encontrado.");
+        return ResponseEntity.notFound().build();
     }
 
     @ApiResponses(value = {
@@ -130,8 +157,28 @@ public class ProductoController {
     )
     @Operation(summary = "Crea registro producto", description = "Guarda nuevo producto")
     @PostMapping
-    public ProductoResponseDTO crear(@Valid @RequestBody ProductoInputDTO dto) {
-        return service.guardar(dto);
+    public ResponseEntity<ProductoResponseDTO> crear(@Valid @RequestBody ProductoInputDTO dto) {
+        String logMsgRequest = "Recibiendo solicitud para crear/guardar producto.";
+        String logMsg = "Solicitud para crear/guardar producto.";
+        logger.info(logMsgRequest);
+        ProductoResponseDTO created = service.guardar(dto);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(created.getId()).toUri();
+        //de componentes de constructor URI // de la actual request //ruta de id // sacar la id del obj creado // transformar a URI.
+        logger.info(logMsg + 
+            "=> creado con ID Producto: {}, ID Producto: {}, Titulo: {}, Autor: {}, Editorial: {}, Categoria: {}, Anio Publicacion: {}, ISBN: {}, Descripcion: {}, ID Proveedor: {}, Nombre Proveedor: {}", 
+                                                                                                            created.getId(), 
+                                                                                                            created.getTitulo(), 
+                                                                                                            created.getAutor(), 
+                                                                                                            created.getEditorial(),
+                                                                                                            created.getCategoria(),
+                                                                                                            created.getAnioPublicacion(),
+                                                                                                            created.getIsbn(),
+                                                                                                            created.getDescripcion(),
+                                                                                                            created.getProveedorId(),
+                                                                                                            created.getProveedorNombre()
+                                                                                                        );
+        return ResponseEntity.created(location).body(created);
+        //devuelve el estado y la locación //devuelve el objeto creado
     }
 
      @ApiResponses(value = {
@@ -157,14 +204,20 @@ public class ProductoController {
     )
     @Operation(summary = "Actualizar informacion", description = "Actualiza datos de producto encontrado por ID")
     @PutMapping("/{id}")
-    public ProductoResponseDTO actualizar(@PathVariable Long id, @Valid @RequestBody ProductoInputDTO dto) {
-        return ProductoMapper.toDto(
-                service.actualizar(
-                        id,
-                        ProductoMapper.toEntity(dto),
-                        dto.getProveedorId()
-                )
-        );
+    public ResponseEntity<ProductoResponseDTO> actualizar(@PathVariable Long id, @Valid @RequestBody ProductoInputDTO dto) {
+
+        String logMsgRequest = "Recibiendo solicitud para actualizar producto con ID: " + id + ".";
+        String logMsg = "Solicitud para actualizar producto con ID: " + id + ".";
+        logger.info(logMsgRequest);
+        
+        ProductoResponseDTO updated = service.actualizar(id, ProductoMapper.toEntity(dto), dto.getProveedorId());
+        
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(updated.getId()).toUri();
+        //de componentes de constructor URI // de la actual request //ruta de id // sacar la id del obj creado // transformar a URI.
+        
+        logger.info(logMsg + " => actualizado.");
+        return ResponseEntity.status(200).location(location).body(updated);
+        //devuelve el estado y la locación //devuelve el objeto creado
     }
 
     @ApiResponses(value = {
@@ -190,9 +243,16 @@ public class ProductoController {
     )
     @Operation(summary = "Eliminar registro", description = "Borra registro de producto")
     @DeleteMapping("/{id}")
-    public String eliminar(@PathVariable Long id) {
-        service.eliminar(id);
-        return "Producto eliminado";
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        String logMsgRequest = "Recibiendo solicitud para borrar producto con ID: " + id + ".";
+        String logMsg = "Solicitud para borrar producto con ID: " + id + ".";
+        logger.info(logMsgRequest);
+        if(service.eliminar(id)){
+            logger.info(logMsg + " => encontrado y borrado.");
+            return ResponseEntity.noContent().build();
+        }
+        logger.info(logMsg + " => no encontrado.");
+        return ResponseEntity.notFound().build();
     }
 
 //    @PostMapping("/{id}/comprar")

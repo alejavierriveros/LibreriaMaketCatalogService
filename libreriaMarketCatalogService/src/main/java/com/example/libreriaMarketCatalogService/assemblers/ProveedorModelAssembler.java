@@ -1,8 +1,6 @@
 package com.example.libreriaMarketCatalogService.assemblers;
 
-import com.example.libreriaMarketCatalogService.controller.ProductoControllerV2;
 import com.example.libreriaMarketCatalogService.controller.ProveedorControllerV2;
-import com.example.libreriaMarketCatalogService.dto.ProductoResponseDTO;
 import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -18,7 +16,7 @@ public class ProveedorModelAssembler implements RepresentationModelAssembler<Pro
     public EntityModel<ProveedorDTO.Response> toModel(ProveedorDTO.Response proveedor){
         return EntityModel.of(proveedor,
                 linkTo(methodOn(ProveedorControllerV2.class).obtener(proveedor.getId())).withSelfRel(),
-                linkTo(methodOn(ProveedorControllerV2.class).listar()).withRel("productos")
+                linkTo(methodOn(ProveedorControllerV2.class).listar()).withRel("proveedores")
         );
     }
 }

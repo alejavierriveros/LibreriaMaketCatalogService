@@ -1,7 +1,7 @@
 package com.example.libreriaMarketCatalogService.controller;
 
+import com.example.libreriaMarketCatalogService.assemblers.ProveedorModelAssembler;
 import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
-import com.example.libreriaMarketCatalogService.mappers.ProveedorMapper;
 import com.example.libreriaMarketCatalogService.service.ProveedorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -10,17 +10,28 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/proveedores")
 public class ProveedorControllerV2 {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProductoController.class.getName());
+    
     @Autowired
     private ProveedorService service;
+
+    @Autowired
+    private ProveedorModelAssembler assembler;
 
     @ApiResponses(value = {
             @ApiResponse(
@@ -41,12 +52,22 @@ public class ProveedorControllerV2 {
                     description = "No se han encontrado el registros",
                     content = @Content(schema = @Schema(hidden = true))
             )
-    }
+        }
     )
     @Operation(summary = "Lista todos", description = "Muestra todos los registros de proveedores")
     @GetMapping
-    public List<ProveedorDTO> listar() {
-        return service.listar().stream().map(ProveedorMapper::toDTO).toList();
+    public ResponseEntity<List<ProveedorDTO.Response>> listar() {
+        String logMsgRequest = "Recibiendo solicitud para buscar listado de proveedores.";
+        String logMsg = "Solicitud para buscar listado de proveedores";
+        logger.info(logMsgRequest);
+        List<ProveedorDTO.Response> listadoDTOs = service.listar();
+
+        if(!listadoDTOs.isEmpty()){
+                logger.info(logMsg + "-> encontrado(s) y listado(s)");
+                return ResponseEntity.ok(listadoDTOs);
+        }
+        logger.info(logMsg + "-> sin coincidencias");
+        return ResponseEntity.noContent().build();
     }
 
     @ApiResponses(value = {
@@ -68,12 +89,25 @@ public class ProveedorControllerV2 {
                     description = "No se ha encontrado el registro de proveedor",
                     content = @Content(schema = @Schema(hidden = true))
             )
-    }
+        }
     )
     @Operation(summary = "Busca por ID", description = "Encuentra proveedor por ID")
     @GetMapping("/{id}")
-    public ProveedorDTO obtener(@PathVariable Long id) {
-        return ProveedorMapper.toDTO(service.obtener(id));
+    public ResponseEntity<ProveedorDTO.Response> obtener(@PathVariable Long id) {
+        String logMsgRequest = "Recibiendo solicitud para buscar proveedor por ID: " + id + ".";
+        String logMsg = "Solicitud para buscar proveedor por ID: " + id + ".";
+        logger.info(logMsgRequest);
+
+        ProveedorDTO.Response dto = service.obtener(id);
+
+        if(dto != null){
+                logger.info(logMsg + "-> encontrado");
+                return ResponseEntity.ok(dto);
+        }
+
+        logger.info(logMsg + "-> no encontrado");
+
+        return ResponseEntity.notFound().build();
     }
 
     @ApiResponses(value = {
@@ -95,12 +129,24 @@ public class ProveedorControllerV2 {
                     description = "Conflicto al guardar",
                     content = @Content(schema = @Schema(hidden = true))
             )
-    }
+        }
     )
     @Operation(summary = "Crea registro proveedor", description = "Guarda nuevo proveedor")
     @PostMapping
-    public ProveedorDTO crear(@Valid @RequestBody ProveedorDTO dto) {
-        return ProveedorMapper.toDTO(service.guardar(ProveedorMapper.toEntity(dto)));
+    public ResponseEntity<ProveedorDTO.Response> crear(@Valid @RequestBody ProveedorDTO.Request dto) {
+        String logMsgRequest = "Recibiendo solicitud para crear proveedor";
+        String logMsg = "Solicitud para crear proveedor";
+        logger.info(logMsgRequest);
+
+        ProveedorDTO.Response created = service.guardar(dto);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(created.getId()).toUri();
+
+        logger.info(logMsg + "-> creado con ID Proveedor: {}, Nombre {}, Contacto {}", 
+                                                                                created.getId(),
+                                                                                created.getNombre(),
+                                                                                created.getContacto());
+
+        return ResponseEntity.created(location).body(created);
     }
 
     @ApiResponses(value = {
@@ -122,12 +168,22 @@ public class ProveedorControllerV2 {
                     description = "No se han encontrado registros",
                     content = @Content(schema = @Schema(hidden = true))
             )
-    }
+        }
     )
     @Operation(summary = "Actualizar informacion", description = "Actualiza datos de proveedor encontrado por ID")
     @PutMapping("/{id}")
-    public ProveedorDTO actualizar(@PathVariable Long id, @Valid @RequestBody ProveedorDTO dto) {
-        return ProveedorMapper.toDTO(service.actualizar(id, ProveedorMapper.toEntity(dto)));
+    public ResponseEntity<ProveedorDTO.Response> actualizar(@PathVariable Long id, @Valid @RequestBody ProveedorDTO.Request dto) {
+        String logMsgRequest = "Recibiendo solicitud para actualizar proveedor con ID: " + id + ".";
+        String logMsg = "Solicitud para actualizar proveedor con ID: " + id + ".";
+        logger.info(logMsgRequest);
+
+        ProveedorDTO.Response updated = service.actualizar(id, dto);
+        
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(updated.getId()).toUri();
+
+        logger.info(logMsg + "-> actualizado");
+
+        return ResponseEntity.status(200).location(location).body(updated);
     }
 
     @ApiResponses(value = {
@@ -149,12 +205,21 @@ public class ProveedorControllerV2 {
                     description = "No se ha encontrado registro de proveedor",
                     content = @Content(schema = @Schema(hidden = true))
             )
-    }
+        }
     )
     @Operation(summary = "Eliminar registro", description = "Borra registro de proveedor")
     @DeleteMapping("/{id}")
-    public String eliminar(@PathVariable Long id) {
-        service.eliminar(id);
-        return "Proveedor eliminado";
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        String logMsgRequest = "Recibiendo solicitud para borrar proveedor con ID: " + id + ".";
+        String logMsg = "Solicitud para borrar proveedor con iD: " + id + ".";
+        logger.info(logMsgRequest);
+
+        if(service.eliminar(id)){
+                logger.info(logMsg + "-> borrado");
+                return ResponseEntity.noContent().build();
+        }
+
+        logger.info(logMsg + "-> no encontrado");
+        return ResponseEntity.notFound().build();
     }
 }

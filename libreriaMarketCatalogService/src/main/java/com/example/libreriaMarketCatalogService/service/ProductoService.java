@@ -23,13 +23,13 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    public List<Producto> listar() {
-        return repo.findAll();
+    public List<ProductoResponseDTO> listar() {
+        return repo.findAll().stream().map(ProductoMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)
-    public Producto obtener(Long id) {
-        return repo.findById(id)
+    public ProductoResponseDTO obtener(Long id) {
+        return repo.findById(id).map(ProductoMapper::toDto)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Producto no encontrado"));
     }
 
@@ -52,9 +52,9 @@ public class ProductoService {
     }
 
 
-    public Producto actualizar(Long id, Producto p, Long proveedorId) {
+    public ProductoResponseDTO actualizar(Long id, Producto p, Long proveedorId) {
 
-        Producto existente = obtener(id);
+        Producto existente = repo.findById(id).orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         repo.findByIsbn(p.getIsbn())
                 .filter(prod -> !prod.getId().equals(id))
@@ -76,11 +76,16 @@ public class ProductoService {
         existente.setDescripcion(p.getDescripcion());
         existente.setProveedor(proveedor);
 
-        return repo.save(existente);
+        return ProductoMapper.toDto(repo.save(existente));
     }
 
-    public void eliminar(Long id) {
-        repo.delete(obtener(id));
+    public Boolean eliminar(Long id) {
+        if(repo.existsById(id)){
+            repo.deleteById(id);
+            return true;
+        }else{
+            throw new RecursoNoEncontradoException("ID de producto no existe");
+        }
     }
 
 //    public Producto comprar(Long id, int cantidad) {

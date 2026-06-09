@@ -5,11 +5,15 @@ import com.example.libreriaMarketCatalogService.model.Proveedor;
 
 public class ProveedorMapper {
 
-    public static ProveedorDTO toDTO(Proveedor p) {
-        return new ProveedorDTO(p.getId(), p.getNombre(), p.getContacto());
+    public static ProveedorDTO.Response toDTO(Proveedor p) {
+        return new ProveedorDTO.Response(p.getId(), p.getNombre(), p.getContacto());
     }
 
-    public static Proveedor toEntity(ProveedorDTO dto) {
-        return new Proveedor(dto.getId(), dto.getNombre(), dto.getContacto(), null);
+    public static Proveedor toEntity(ProveedorDTO.Request dto) {
+        Proveedor entityProv = new Proveedor();
+        entityProv.setNombre(dto.getNombre());
+        entityProv.setContacto(dto.getNombre());
+        entityProv.setProductos(null);
+        return entityProv;
     }
 }
