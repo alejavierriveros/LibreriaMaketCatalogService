@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v2/proveedores")
 public class ProveedorControllerV2 {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProductoController.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ProveedorControllerV2.class.getName());
     
     @Autowired
     private ProveedorService service;

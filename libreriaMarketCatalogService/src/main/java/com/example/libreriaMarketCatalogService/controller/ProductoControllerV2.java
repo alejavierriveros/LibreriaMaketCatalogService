@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class ProductoControllerV2 {
     
 
-    private static final Logger logger = LoggerFactory.getLogger(ProductoController.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ProductoControllerV2.class.getName());
 
     @Autowired
     private ProductoService service;
