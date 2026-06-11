@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  lmcatalogms:
+    build: .
+    container_name: lmcatalogms
+    environment:
+      - SPRING_APPLICATION_NAME=lmcatalogms
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://host.docker.internal:8090/eureka
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/catalog_db
+      - SPRING_DATASOURCE_USERNAME=cataloguser
+      - SPRING_DATASOURCE_PASSWORD=catalog1234
+    networks:
+      - ms-network
+
+networks:
+  ms-network:
+    driver: bridge
