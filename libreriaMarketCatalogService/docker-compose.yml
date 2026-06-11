@@ -4,6 +4,8 @@ services:
   lmcatalogms:
     build: .
     container_name: lmcatalogms
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - SPRING_APPLICATION_NAME=lmcatalogms
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://host.docker.internal:8090/eureka
