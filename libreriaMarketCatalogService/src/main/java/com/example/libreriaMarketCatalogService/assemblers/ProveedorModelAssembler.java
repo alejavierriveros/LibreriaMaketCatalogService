@@ -15,8 +15,8 @@ public class ProveedorModelAssembler implements RepresentationModelAssembler<Pro
     @Override
     public EntityModel<ProveedorDTO.Response> toModel(ProveedorDTO.Response proveedor){
         return EntityModel.of(proveedor,
-                linkTo(methodOn(ProveedorControllerV2.class).obtener(proveedor.getId())).withSelfRel(),
-                linkTo(methodOn(ProveedorControllerV2.class).listar()).withRel("proveedores")
+                linkTo(methodOn(ProveedorControllerV2.class).findById(proveedor.getId())).withSelfRel(),
+                linkTo(methodOn(ProveedorControllerV2.class).listAll()).withRel("proveedores")
         );
     }
 }

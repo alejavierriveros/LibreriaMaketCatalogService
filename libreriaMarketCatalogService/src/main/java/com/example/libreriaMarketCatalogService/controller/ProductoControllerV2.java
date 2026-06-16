@@ -65,7 +65,7 @@ public class ProductoControllerV2 {
     )
     @Operation(summary = "Lista todos", description = "Muestra todos los registros de productos")
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<CollectionModel<EntityModel<ProductoResponseDTO>>> listar() {
+    public ResponseEntity<CollectionModel<EntityModel<ProductoResponseDTO>>> listAll() {
         String logMsgRequest = "Recibiendo solicitud para buscar listado de productos.";
         String logMsg = "Solicitud para buscar listado de productos.";
         logger.info(logMsgRequest);
@@ -73,7 +73,7 @@ public class ProductoControllerV2 {
 
         if (!listadoDTO.isEmpty()){
             logger.info(logMsg + "=> encontrado(s) y enlistado(s).");
-            return ResponseEntity.ok(CollectionModel.of(listadoDTO, linkTo(methodOn(ProductoControllerV2.class).listar()).withSelfRel()));
+            return ResponseEntity.ok(CollectionModel.of(listadoDTO, linkTo(methodOn(ProductoControllerV2.class).listAll()).withSelfRel()));
         }
         logger.info(logMsg + "=> sin coincidencias (vacío).");
         return ResponseEntity.noContent().build();
@@ -102,7 +102,7 @@ public class ProductoControllerV2 {
     )
     @Operation(summary = "Busca por ID", description = "Encuentra producto por ID")
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<EntityModel<ProductoResponseDTO>> obtener(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<ProductoResponseDTO>> findByid(@PathVariable Long id) {
         String logMsgRequest = "Recibiendo solicitud para buscar producto por ID: " + id + ".";
         String logMsg = "Solicitud para buscar producto por ID: " + id + ".";
         logger.info(logMsgRequest);
@@ -170,7 +170,7 @@ public class ProductoControllerV2 {
         String logMsg = "Solicitud para crear/guardar producto.";
         logger.info(logMsgRequest);
         ProductoResponseDTO created = service.guardar(dto);
-        URI location = linkTo(methodOn(ProductoControllerV2.class).obtener(created.getId())).toUri();
+        URI location = linkTo(methodOn(ProductoControllerV2.class).findByid(created.getId())).toUri();
         
         logger.info(logMsg + 
             "=> creado con ID Producto: {}, ID Producto: {}, Titulo: {}, Autor: {}, Editorial: {}, Categoria: {}, Anio Publicacion: {}, ISBN: {}, Descripcion: {}, ID Proveedor: {}, Nombre Proveedor: {}", 

@@ -57,7 +57,7 @@ public class ProductoController {
     )
     @Operation(summary = "Lista todos", description = "Muestra todos los registros de productos")
     @GetMapping
-    public ResponseEntity<List<ProductoResponseDTO>> listar() {
+    public ResponseEntity<List<ProductoResponseDTO>> listAll() {
         String logMsgRequest = "Recibiendo solicitud para buscar listado de productos.";
         String logMsg = "Solicitud para buscar listado de productos.";
         logger.info(logMsgRequest);
@@ -94,7 +94,7 @@ public class ProductoController {
     )
     @Operation(summary = "Busca por ID", description = "Encuentra producto por ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ProductoResponseDTO> obtener(@PathVariable Long id) {
+    public ResponseEntity<ProductoResponseDTO> findById(@PathVariable Long id) {
         String logMsgRequest = "Recibiendo solicitud para buscar producto por ID: " + id + ".";
         String logMsg = "Solicitud para buscar producto por ID: " + id + ".";
         logger.info(logMsgRequest);

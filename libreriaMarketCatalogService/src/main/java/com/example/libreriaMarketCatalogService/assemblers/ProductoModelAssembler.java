@@ -14,8 +14,9 @@ public class ProductoModelAssembler implements RepresentationModelAssembler<Prod
     @Override
     public EntityModel<ProductoResponseDTO> toModel(ProductoResponseDTO producto){
         return EntityModel.of(producto,
-            linkTo(methodOn(ProductoControllerV2.class).obtener(producto.getId())).withSelfRel(),
-            linkTo(methodOn(ProductoControllerV2.class).listar()).withRel("productos")
+            linkTo(methodOn(ProductoControllerV2.class).findByid(producto.getId())).withSelfRel(),
+            linkTo(methodOn(ProductoControllerV2.class).listAll()).withRel("list-all"),
+            linkTo(methodOn(ProductoControllerV2.class).existsById(producto.getId())).withRel("exists-by-id")
         );
     }
 }

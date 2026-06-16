@@ -63,7 +63,7 @@ public class ProveedorControllerV2 {
     )
     @Operation(summary = "Lista todos", description = "Muestra todos los registros de proveedores")
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<CollectionModel<EntityModel<ProveedorDTO.Response>>> listar() {
+    public ResponseEntity<CollectionModel<EntityModel<ProveedorDTO.Response>>> listAll() {
         String logMsgRequest = "Recibiendo solicitud para buscar listado de proveedores.";
         String logMsg = "Solicitud para buscar listado de proveedores";
         logger.info(logMsgRequest);
@@ -72,7 +72,7 @@ public class ProveedorControllerV2 {
         if(!listadoDTOs.isEmpty()){
                 logger.info(logMsg + "-> encontrado(s) y listado(s)");
                 return ResponseEntity.ok(CollectionModel.of(listadoDTOs, 
-                        linkTo(methodOn(ProveedorControllerV2.class).listar()).withSelfRel()));
+                        linkTo(methodOn(ProveedorControllerV2.class).listAll()).withSelfRel()));
         }
         logger.info(logMsg + "-> sin coincidencias");
         return ResponseEntity.noContent().build();
@@ -101,7 +101,7 @@ public class ProveedorControllerV2 {
     )
     @Operation(summary = "Busca por ID", description = "Encuentra proveedor por ID")
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<EntityModel<ProveedorDTO.Response>> obtener(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<ProveedorDTO.Response>> findById(@PathVariable Long id) {
         String logMsgRequest = "Recibiendo solicitud para buscar proveedor por ID: " + id + ".";
         String logMsg = "Solicitud para buscar proveedor por ID: " + id + ".";
         logger.info(logMsgRequest);
@@ -147,7 +147,7 @@ public class ProveedorControllerV2 {
         logger.info(logMsgRequest);
 
         ProveedorDTO.Response created = service.guardar(dto);
-        URI location = linkTo(methodOn(ProveedorControllerV2.class).obtener(created.getId())).toUri();
+        URI location = linkTo(methodOn(ProveedorControllerV2.class).findById(created.getId())).toUri();
 
         logger.info(logMsg + "-> creado con ID Proveedor: {}, Nombre {}, Contacto {}", 
                                                                                 created.getId(),
