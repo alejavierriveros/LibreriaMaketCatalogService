@@ -98,7 +98,7 @@ public class ProveedorController {
         String logMsg = "Solicitud para buscar proveedor por ID: " + id + ".";
         logger.info(logMsgRequest);
 
-        ProveedorDTO.Response dto = service.obtener(id);
+        ProveedorDTO.Response dto = service.obtenerPorId(id);
 
         if(dto != null){
                 logger.info(logMsg + "-> encontrado");

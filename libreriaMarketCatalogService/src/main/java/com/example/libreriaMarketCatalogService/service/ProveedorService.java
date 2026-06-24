@@ -19,12 +19,11 @@ public class ProveedorService {
     @Autowired
     private ProveedorRepository repo;
 
-
     public List<ProveedorDTO.Response> listar() {
         return repo.findAll().stream().map(ProveedorMapper::toDTO).toList();
     }
 
-    public ProveedorDTO.Response obtener(Long id) {
+    public ProveedorDTO.Response obtenerPorId(Long id) {
         return repo.findById(id).map(ProveedorMapper::toDTO)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Proveedor no encontrado"));
     }

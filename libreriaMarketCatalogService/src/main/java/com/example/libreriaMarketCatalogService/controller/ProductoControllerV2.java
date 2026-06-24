@@ -106,7 +106,7 @@ public class ProductoControllerV2 {
         String logMsgRequest = "Recibiendo solicitud para buscar producto por ID: " + id + ".";
         String logMsg = "Solicitud para buscar producto por ID: " + id + ".";
         logger.info(logMsgRequest);
-        ProductoResponseDTO dto = service.obtener(id);
+        ProductoResponseDTO dto = service.obtenerPorId(id);
         if (dto != null){
             logger.info(logMsg + "=> encontrado.");
             return ResponseEntity.ok(assembler.toModel(dto));

@@ -28,7 +28,7 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    public ProductoResponseDTO obtener(Long id) {
+    public ProductoResponseDTO obtenerPorId(Long id) {
         return repo.findById(id).map(ProductoMapper::toDto)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Producto no encontrado"));
     }
@@ -40,7 +40,7 @@ public class ProductoService {
         }
 
         if (!proveedorRepo.existsById(dto.getProveedorId())){
-                throw new RecursoNoEncontradoException("Proveedor no existe");
+            throw new RecursoNoEncontradoException("Proveedor no existe");
         }
 
         return ProductoMapper.toDto(repo.save(ProductoMapper.toEntity(dto)));
@@ -54,7 +54,7 @@ public class ProductoService {
 
     public ProductoResponseDTO actualizar(Long id, Producto p, Long proveedorId) {
 
-        Producto existente = repo.findById(id).orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        Producto existente = repo.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Producto no encontrado"));
 
         repo.findByIsbn(p.getIsbn())
                 .filter(prod -> !prod.getId().equals(id))
