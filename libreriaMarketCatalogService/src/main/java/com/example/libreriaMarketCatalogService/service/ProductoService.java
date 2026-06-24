@@ -84,7 +84,7 @@ public class ProductoService {
             repo.deleteById(id);
             return true;
         }else{
-            throw new RecursoNoEncontradoException("ID de producto no existe");
+            throw new RecursoNoEncontradoException("Producto no encontrado");
         }
     }
 

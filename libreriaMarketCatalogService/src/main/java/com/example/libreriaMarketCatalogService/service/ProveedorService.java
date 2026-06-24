@@ -1,5 +1,6 @@
 package com.example.libreriaMarketCatalogService.service;
 
+import com.example.libreriaMarketCatalogService.model.Producto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,8 @@ public class ProveedorService {
 
     public ProveedorDTO.Response guardar(ProveedorDTO.Request p) {
 
+        if(repo.findByNombre(p.getNombre()).isPresent()) throw new BadRequestException("Ya existe un proveedor con ese nombre");
+
         Proveedor guardado = new Proveedor();
 
         guardado.setNombre(p.getNombre());
@@ -52,12 +55,12 @@ public class ProveedorService {
     public boolean eliminar(Long id) {
 
         Proveedor proveedor = repo.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Proveedor no encontrado"));
+        List<Producto> productos = proveedor.getProductos();
 
-        if (proveedor.getProductos() != null && !proveedor.getProductos().isEmpty()) {
-            throw new BadRequestException("No se puede eliminar proveedor con productos asociados");
+        if (productos == null) {
+            repo.delete(proveedor);
+            return true;
         }
-
-        repo.delete(proveedor);
-        return true;
+        throw new BadRequestException("No se puede eliminar proveedor con productos asociados");
     }
 }

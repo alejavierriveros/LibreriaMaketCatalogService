@@ -40,6 +40,11 @@ public class ProductoServiceTest {
 
     private Proveedor proveedor;
 
+    private final RecursoNoEncontradoException recursoNoEncontradoExceptionProducto = new RecursoNoEncontradoException("Producto no encontrado");
+    private final RecursoNoEncontradoException recursoNoEncontradoExceptionProveedor = new RecursoNoEncontradoException("Proveedor no existe");
+    private final BadRequestException badRequestExceptionProductoYaExiste = new BadRequestException("Ya existe un producto con ese ISBN");
+    private final BadRequestException badRequestExceptionISBNRegistrado = new BadRequestException("ISBN ya registrado");
+
     @BeforeEach
     void setUp(){
         proveedor = new Proveedor(1L, "Distribuidora Libros", "libros@distro.com", List.of());
@@ -97,7 +102,7 @@ public class ProductoServiceTest {
 
         Exception exception = assertThrows(RecursoNoEncontradoException.class, () -> productoService.obtenerPorId(id));
 
-        String expectedMessage = "Producto no encontrado";
+        String expectedMessage = recursoNoEncontradoExceptionProducto.getMessage();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -124,7 +129,7 @@ public class ProductoServiceTest {
 
         Exception exception = assertThrows(BadRequestException.class, () -> productoService.guardar(productoInputDTO));
 
-        String expectedMessage = "Ya existe un producto con ese ISBN";
+        String expectedMessage = badRequestExceptionProductoYaExiste.getMessage();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -138,7 +143,7 @@ public class ProductoServiceTest {
 
         Exception exception = assertThrows(RecursoNoEncontradoException.class, () -> productoService.guardar(productoInputDTO));
 
-        String expectedMessage = "Proveedor no existe";
+        String expectedMessage = recursoNoEncontradoExceptionProveedor.getMessage();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -180,7 +185,7 @@ public class ProductoServiceTest {
 
         Exception exception = assertThrows(RecursoNoEncontradoException.class, () -> productoService.actualizar(id, productoUpdate, proveedor.getId()));
 
-        String expectedMessage = "Producto no encontrado";
+        String expectedMessage = recursoNoEncontradoExceptionProducto.getMessage();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -196,7 +201,7 @@ public class ProductoServiceTest {
 
         Exception exception = assertThrows(BadRequestException.class, () -> productoService.actualizar(id, productoUpdate, proveedor.getId()));
 
-        String expectedMessage = "ISBN ya registrado";
+        String expectedMessage = badRequestExceptionISBNRegistrado.getMessage();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -213,7 +218,7 @@ public class ProductoServiceTest {
 
         Exception exception = assertThrows(RecursoNoEncontradoException.class, () -> productoService.actualizar(id, productoUpdate, proveedor.getId()));
 
-        String expectedMessage = "Proveedor no existe";
+        String expectedMessage = recursoNoEncontradoExceptionProveedor.getMessage();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));
@@ -239,7 +244,7 @@ public class ProductoServiceTest {
         when(productoRepository.existsById(id)).thenReturn(false);
         Exception exception = assertThrows(RecursoNoEncontradoException.class, () -> productoService.eliminar(id));
 
-        String expectedMessage = "ID de producto no existe";
+        String expectedMessage = recursoNoEncontradoExceptionProducto.getMessage();
         String actualMessage = exception.getMessage();
 
         assertTrue(actualMessage.contains(expectedMessage));

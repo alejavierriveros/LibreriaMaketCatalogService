@@ -1,11 +1,14 @@
 package com.example.libreriaMarketCatalogService.model;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.util.List;
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -29,5 +32,6 @@ public class Proveedor {
 
     @OneToMany(mappedBy = "proveedor")
     @JsonIgnore
-    private List<Producto> productos;
+    public List<Producto> productos;
+
 }
