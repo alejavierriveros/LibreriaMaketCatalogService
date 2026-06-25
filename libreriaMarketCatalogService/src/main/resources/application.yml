@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: LMCatalogMS
+  profiles:
+    active: test
