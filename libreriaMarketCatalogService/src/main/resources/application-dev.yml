@@ -8,7 +8,7 @@ server:
 
   ##### BD MySQL ######
   datasource:
-    url: jdbc:mysql://localhost:3306/catalog_db
+    url: jdbc:mysql://localhost:3306/catalog_db_dev
     #                             servicio://dirección:puerto/nombre_de_la_bd
     username: cataloguser
     #stockuser
@@ -58,7 +58,7 @@ logging:
   level:
     root: INFO
     # Logs por paquete:
-    cl.duoc.lmstockms: DEBUG
+    com.example.libreriaMarketCatalogService: DEBUG
     # Conversión y comunicación a BD:
     org.hibernate: ERROR
 
