@@ -1,4 +1,4 @@
-package com.example.libreriaMarketCatalogService;
+package com.example.libreriaMarketCatalogService.service;
 
 import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
 import com.example.libreriaMarketCatalogService.exceptions.BadRequestException;
@@ -6,7 +6,6 @@ import com.example.libreriaMarketCatalogService.exceptions.RecursoNoEncontradoEx
 import com.example.libreriaMarketCatalogService.model.Producto;
 import com.example.libreriaMarketCatalogService.model.Proveedor;
 import com.example.libreriaMarketCatalogService.repository.ProveedorRepository;
-import com.example.libreriaMarketCatalogService.service.ProveedorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +29,7 @@ public class ProveedorServiceTest {
 
     private Proveedor proveedorUno;
     private Proveedor proveedorDos;
-    private ProveedorDTO.Response proveedorResponse;
     private ProveedorDTO.Request proveedorRequest;
-
-    private Producto productoUno;
-    private Producto productoDos;
 
     Long id = 1L; //id de ejemplo
 
@@ -48,10 +43,10 @@ public class ProveedorServiceTest {
         proveedorUno = new Proveedor(1L, "Distribuidora Libros", "libros@distro.com", null);
         proveedorDos = new Proveedor( 2L, "Proveedor Test", "contacto@test.cl", null);
 
-        productoUno = new Producto(3L, "Java for Dummies", "Terry A. Burd", "Wiley", "Programación",
+        Producto productoUno = new Producto(3L, "Java for Dummies", "Terry A. Burd", "Wiley", "Programación",
                 2022, 26725.0, "978-111-98-6164-5", "desc", proveedorUno);
 
-        productoDos = new Producto(5L, "Clean Code", "Robert C. Martin", "Prentice Hall", "Programación",
+        Producto productoDos = new Producto(5L, "Clean Code", "Robert C. Martin", "Prentice Hall", "Programación",
                 2008, 30000.0, "978-013-23-5088-4", "desc", proveedorDos);
 
         proveedorUno.setProductos(List.of(productoUno, productoDos));

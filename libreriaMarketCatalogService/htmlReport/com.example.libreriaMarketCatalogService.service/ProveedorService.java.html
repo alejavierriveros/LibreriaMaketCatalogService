@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProveedorService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.example.libreriaMarketCatalogService.service</a> &gt; <span class="el_source">ProveedorService.java</span></div><h1>ProveedorService.java</h1><pre class="source lang-java linenums">package com.example.libreriaMarketCatalogService.service;
+
+import com.example.libreriaMarketCatalogService.model.Producto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import com.example.libreriaMarketCatalogService.model.Proveedor;
+import com.example.libreriaMarketCatalogService.repository.ProveedorRepository;
+import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
+import com.example.libreriaMarketCatalogService.exceptions.*;
+import com.example.libreriaMarketCatalogService.mappers.ProveedorMapper;
+
+@Service
+@Transactional
+<span class="fc" id="L18">public class ProveedorService {</span>
+
+    @Autowired
+    private ProveedorRepository repo;
+
+    public List&lt;ProveedorDTO.Response&gt; listar() {
+<span class="fc" id="L24">        return repo.findAll().stream().map(ProveedorMapper::toDTO).toList();</span>
+    }
+
+    public ProveedorDTO.Response obtenerPorId(Long id) {
+<span class="fc" id="L28">        return repo.findById(id).map(ProveedorMapper::toDTO)</span>
+<span class="fc" id="L29">                .orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Proveedor no encontrado&quot;));</span>
+    }
+
+    public ProveedorDTO.Response guardar(ProveedorDTO.Request p) {
+
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if(repo.findByNombre(p.getNombre()).isPresent()) throw new BadRequestException(&quot;Ya existe un proveedor con ese nombre&quot;);</span>
+
+<span class="fc" id="L36">        Proveedor guardado = new Proveedor();</span>
+
+<span class="fc" id="L38">        guardado.setNombre(p.getNombre());</span>
+<span class="fc" id="L39">        guardado.setContacto(p.getContacto());</span>
+<span class="fc" id="L40">        guardado.setProductos(p.getProductos());</span>
+
+<span class="fc" id="L42">        return ProveedorMapper.toDTO(repo.save(guardado));</span>
+    }
+
+    public ProveedorDTO.Response actualizar(Long id, ProveedorDTO.Request p) {
+
+<span class="fc" id="L47">        Proveedor actualizar = repo.findById(id).orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Proveedor no encontrado&quot;));</span>
+<span class="fc" id="L48">        actualizar.setNombre(p.getNombre());</span>
+<span class="fc" id="L49">        actualizar.setContacto(p.getContacto());</span>
+<span class="fc" id="L50">        actualizar.setProductos(p.getProductos());</span>
+
+<span class="fc" id="L52">        return ProveedorMapper.toDTO(repo.save(actualizar));</span>
+    }
+
+    public boolean eliminar(Long id) {
+
+<span class="fc" id="L57">        Proveedor proveedor = repo.findById(id).orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Proveedor no encontrado&quot;));</span>
+<span class="fc" id="L58">        List&lt;Producto&gt; productos = proveedor.getProductos();</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (productos == null) {</span>
+<span class="fc" id="L61">            repo.delete(proveedor);</span>
+<span class="fc" id="L62">            return true;</span>
+        }
+<span class="fc" id="L64">        throw new BadRequestException(&quot;No se puede eliminar proveedor con productos asociados&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

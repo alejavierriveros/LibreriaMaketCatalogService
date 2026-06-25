@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductoMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.example.libreriaMarketCatalogService.mappers</a> &gt; <span class="el_source">ProductoMapper.java</span></div><h1>ProductoMapper.java</h1><pre class="source lang-java linenums">package com.example.libreriaMarketCatalogService.mappers;
+
+import com.example.libreriaMarketCatalogService.dto.ProductoInputDTO;
+import com.example.libreriaMarketCatalogService.dto.ProductoResponseDTO;
+import com.example.libreriaMarketCatalogService.model.Producto;
+
+<span class="nc" id="L7">public class ProductoMapper {</span>
+
+    public static ProductoResponseDTO toDto(Producto p) {
+<span class="fc" id="L10">        ProductoResponseDTO dto = new ProductoResponseDTO();</span>
+
+<span class="fc" id="L12">        dto.setId(p.getId());</span>
+<span class="fc" id="L13">        dto.setTitulo(p.getTitulo());</span>
+<span class="fc" id="L14">        dto.setAutor(p.getAutor());</span>
+<span class="fc" id="L15">        dto.setEditorial(p.getEditorial());</span>
+<span class="fc" id="L16">        dto.setCategoria(p.getCategoria());</span>
+<span class="fc" id="L17">        dto.setAnioPublicacion(p.getAnioPublicacion());</span>
+<span class="fc" id="L18">        dto.setPrecio(p.getPrecio());</span>
+//        dto.setStock(p.getStock());
+<span class="fc" id="L20">        dto.setIsbn(p.getIsbn());</span>
+<span class="fc" id="L21">        dto.setDescripcion(p.getDescripcion());</span>
+
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        if (p.getProveedor() != null) {</span>
+<span class="fc" id="L24">            dto.setProveedorId(p.getProveedor().getId());</span>
+<span class="fc" id="L25">            dto.setProveedorNombre(p.getProveedor().getNombre());</span>
+        }
+
+<span class="fc" id="L28">        return dto;</span>
+    }
+
+    public static Producto toEntity(ProductoInputDTO dto) {
+<span class="fc" id="L32">        Producto p = new Producto();</span>
+
+
+<span class="fc" id="L35">        p.setTitulo(dto.getTitulo());</span>
+<span class="fc" id="L36">        p.setAutor(dto.getAutor());</span>
+<span class="fc" id="L37">        p.setEditorial(dto.getEditorial());</span>
+<span class="fc" id="L38">        p.setCategoria(dto.getCategoria());</span>
+<span class="fc" id="L39">        p.setAnioPublicacion(dto.getAnioPublicacion());</span>
+<span class="fc" id="L40">        p.setPrecio(dto.getPrecio());</span>
+//        p.setStock(dto.getStock());
+<span class="fc" id="L42">        p.setIsbn(dto.getIsbn());</span>
+<span class="fc" id="L43">        p.setDescripcion(dto.getDescripcion());</span>
+
+<span class="fc" id="L45">        return p;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProveedorServiceTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.example.libreriaMarketCatalogService</a> &gt; <span class="el_source">ProveedorServiceTest.java</span></div><h1>ProveedorServiceTest.java</h1><pre class="source lang-java linenums">package com.example.libreriaMarketCatalogService;
+
+import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
+import com.example.libreriaMarketCatalogService.exceptions.BadRequestException;
+import com.example.libreriaMarketCatalogService.exceptions.RecursoNoEncontradoException;
+import com.example.libreriaMarketCatalogService.model.Producto;
+import com.example.libreriaMarketCatalogService.model.Proveedor;
+import com.example.libreriaMarketCatalogService.repository.ProveedorRepository;
+import com.example.libreriaMarketCatalogService.service.ProveedorService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@SpringBootTest
+<span class="fc" id="L24">public class ProveedorServiceTest {</span>
+    @MockitoBean
+    private ProveedorRepository proveedorRepository;
+
+    @Autowired
+    private ProveedorService proveedorService;
+
+    private Proveedor proveedorUno;
+    private Proveedor proveedorDos;
+    private ProveedorDTO.Request proveedorRequest;
+
+<span class="fc" id="L35">    Long id = 1L; //id de ejemplo</span>
+
+<span class="fc" id="L37">    private final RecursoNoEncontradoException recursoNoEncontradoException = new RecursoNoEncontradoException(&quot;Proveedor no encontrado&quot;);</span>
+<span class="fc" id="L38">    private final BadRequestException badRequestExceptionProveedorYaExiste =  new BadRequestException(&quot;Ya existe un proveedor con ese nombre&quot;);</span>
+<span class="fc" id="L39">    private final BadRequestException badRequestExceptionProductosAsociados = new BadRequestException(&quot;No se puede eliminar proveedor con productos asociados&quot;);</span>
+
+    @BeforeEach
+    void setUp(){
+        //maquetas de entidades y DTOs
+<span class="fc" id="L44">        proveedorUno = new Proveedor(1L, &quot;Distribuidora Libros&quot;, &quot;libros@distro.com&quot;, null);</span>
+<span class="fc" id="L45">        proveedorDos = new Proveedor( 2L, &quot;Proveedor Test&quot;, &quot;contacto@test.cl&quot;, null);</span>
+
+<span class="fc" id="L47">        Producto productoUno = new Producto(3L, &quot;Java for Dummies&quot;, &quot;Terry A. Burd&quot;, &quot;Wiley&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L48">                2022, 26725.0, &quot;978-111-98-6164-5&quot;, &quot;desc&quot;, proveedorUno);</span>
+
+<span class="fc" id="L50">        Producto productoDos = new Producto(5L, &quot;Clean Code&quot;, &quot;Robert C. Martin&quot;, &quot;Prentice Hall&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L51">                2008, 30000.0, &quot;978-013-23-5088-4&quot;, &quot;desc&quot;, proveedorDos);</span>
+
+<span class="fc" id="L53">        proveedorUno.setProductos(List.of(productoUno, productoDos));</span>
+
+<span class="fc" id="L55">        proveedorRequest = new ProveedorDTO.Request(&quot;Distribuidora Libros&quot;, &quot;libros@distro.com&quot;, List.of());</span>
+<span class="fc" id="L56">    }</span>
+
+    @Test
+    void listarTest(){
+<span class="fc" id="L60">        when(proveedorRepository.findAll()).thenReturn(List.of(proveedorUno, proveedorDos));</span>
+
+<span class="fc" id="L62">        List&lt;ProveedorDTO.Response&gt; resultados = proveedorService.listar();</span>
+
+<span class="fc" id="L64">        assertFalse(resultados.isEmpty());</span>
+<span class="fc" id="L65">        assertEquals(proveedorUno.getNombre(), resultados.getFirst().getNombre());</span>
+<span class="fc" id="L66">        verify(proveedorRepository).findAll();</span>
+<span class="fc" id="L67">    }</span>
+
+    @Test
+    void listarVacioTest(){
+<span class="fc" id="L71">        when(proveedorRepository.findAll()).thenReturn(List.of());</span>
+
+<span class="fc" id="L73">        List&lt;ProveedorDTO.Response&gt; resultados = proveedorService.listar();</span>
+
+<span class="fc" id="L75">        assertTrue(resultados.isEmpty());</span>
+<span class="fc" id="L76">        verify(proveedorRepository).findAll();</span>
+<span class="fc" id="L77">    }</span>
+
+    @Test
+    void obtenerPorIdTest(){
+<span class="fc" id="L81">        when(proveedorRepository.findById(id)).thenReturn(Optional.of(proveedorUno));</span>
+
+<span class="fc" id="L83">        ProveedorDTO.Response resultado = proveedorService.obtenerPorId(id);</span>
+
+<span class="fc" id="L85">        assertEquals(id, resultado.getId());</span>
+<span class="fc" id="L86">        verify(proveedorRepository).findById(id);</span>
+<span class="fc" id="L87">    }</span>
+
+    @Test
+    void obtenerPorIdNoEncontradoTest(){
+<span class="fc" id="L91">        when(proveedorRepository.findById(id)).thenReturn(Optional.empty());</span>
+
+<span class="pc" id="L93">        Exception exception = assertThrows(RecursoNoEncontradoException.class, () -&gt; proveedorService.obtenerPorId(id));</span>
+<span class="fc" id="L94">        String expectedMessage = recursoNoEncontradoException.getMessage();</span>
+<span class="fc" id="L95">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L97">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L98">        verify(proveedorRepository).findById(id);</span>
+<span class="fc" id="L99">    }</span>
+
+    @Test
+    void guardarTest(){
+<span class="fc" id="L103">        when(proveedorRepository.findByNombre(proveedorRequest.getNombre())).thenReturn(Optional.empty());</span>
+<span class="fc" id="L104">        when(proveedorRepository.save(any(Proveedor.class))).thenAnswer(invocation -&gt; invocation.getArgument(0));</span>
+
+<span class="fc" id="L106">        ProveedorDTO.Response resultado = proveedorService.guardar(proveedorRequest);</span>
+
+<span class="fc" id="L108">        assertEquals(proveedorRequest.getNombre(), resultado.getNombre());</span>
+<span class="fc" id="L109">        verify(proveedorRepository).findByNombre(proveedorRequest.getNombre());</span>
+<span class="fc" id="L110">        verify(proveedorRepository).save(any(Proveedor.class));</span>
+<span class="fc" id="L111">    }</span>
+
+    @Test
+    void guardarYaExisteTest(){
+<span class="fc" id="L115">        when(proveedorRepository.findByNombre(proveedorRequest.getNombre())).thenReturn(Optional.of(proveedorUno));</span>
+
+<span class="pc" id="L117">        Exception exception = assertThrows(BadRequestException.class, () -&gt; proveedorService.guardar(proveedorRequest));</span>
+<span class="fc" id="L118">        String expectedMessage = badRequestExceptionProveedorYaExiste.getMessage();</span>
+<span class="fc" id="L119">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L121">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L122">        verify(proveedorRepository).findByNombre(proveedorRequest.getNombre());</span>
+<span class="fc" id="L123">        verify(proveedorRepository, never()).save(any(Proveedor.class));</span>
+<span class="fc" id="L124">    }</span>
+
+    @Test
+    void actualizarTest(){
+<span class="fc" id="L128">        when(proveedorRepository.findById(id)).thenReturn(Optional.of(proveedorUno));</span>
+<span class="fc" id="L129">        when(proveedorRepository.save(any(Proveedor.class))).thenReturn(proveedorUno);</span>
+
+<span class="fc" id="L131">        ProveedorDTO.Response resultado = proveedorService.actualizar(id, proveedorRequest);</span>
+
+<span class="fc" id="L133">        assertEquals(id, resultado.getId());</span>
+<span class="fc" id="L134">        verify(proveedorRepository).findById(id);</span>
+<span class="fc" id="L135">        verify(proveedorRepository).save(any(Proveedor.class));</span>
+<span class="fc" id="L136">    }</span>
+
+    @Test
+    void actualizarNoExisteTest(){
+<span class="fc" id="L140">        when(proveedorRepository.findById(id)).thenReturn(Optional.empty());</span>
+
+<span class="pc" id="L142">        Exception exception = assertThrows(RecursoNoEncontradoException.class, () -&gt; proveedorService.actualizar(id, proveedorRequest));</span>
+<span class="fc" id="L143">        String expectedMessage = recursoNoEncontradoException.getMessage();</span>
+<span class="fc" id="L144">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L146">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L147">        verify(proveedorRepository).findById(id);</span>
+<span class="fc" id="L148">        verify(proveedorRepository, never()).save(any(Proveedor.class));</span>
+<span class="fc" id="L149">    }</span>
+
+    @Test
+    void eliminarTest(){
+<span class="fc" id="L153">        id = 2L;</span>
+<span class="fc" id="L154">        when(proveedorRepository.findById(id)).thenReturn(Optional.of(proveedorDos));</span>
+
+<span class="fc" id="L156">        boolean resultado = proveedorService.eliminar(id);</span>
+
+<span class="fc" id="L158">        assertTrue(resultado);</span>
+<span class="fc" id="L159">        verify(proveedorRepository).findById(id);</span>
+<span class="fc" id="L160">        verify(proveedorRepository).delete(proveedorDos);</span>
+<span class="fc" id="L161">    }</span>
+
+    @Test
+    void eliminarNoEncontradoTest(){
+<span class="fc" id="L165">        id = 2L;</span>
+<span class="fc" id="L166">        when(proveedorRepository.findById(id)).thenReturn(Optional.empty());</span>
+
+<span class="pc" id="L168">        Exception exception = assertThrows(RecursoNoEncontradoException.class, () -&gt; proveedorService.eliminar(id));</span>
+<span class="fc" id="L169">        String expectedMessage = recursoNoEncontradoException.getMessage();</span>
+<span class="fc" id="L170">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L172">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L173">        verify(proveedorRepository).findById(id);</span>
+<span class="fc" id="L174">        verify(proveedorRepository, never()).delete(proveedorDos);</span>
+<span class="fc" id="L175">    }</span>
+
+    @Test
+    void eliminarProductosAsociadosExceptionTest(){
+<span class="fc" id="L179">        id = 2L;</span>
+<span class="fc" id="L180">        when(proveedorRepository.findById(id)).thenReturn(Optional.of(proveedorUno));</span>
+
+<span class="pc" id="L182">        Exception exception = assertThrows(BadRequestException.class, () -&gt; proveedorService.eliminar(id));</span>
+<span class="fc" id="L183">        String expectedMessage = badRequestExceptionProductosAsociados.getMessage();</span>
+<span class="fc" id="L184">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L186">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L187">        verify(proveedorRepository).findById(id);</span>
+<span class="fc" id="L188">        verify(proveedorRepository, never()).delete(proveedorDos);</span>
+<span class="fc" id="L189">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

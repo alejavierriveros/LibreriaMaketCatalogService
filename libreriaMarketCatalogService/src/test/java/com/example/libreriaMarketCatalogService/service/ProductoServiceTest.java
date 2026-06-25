@@ -1,4 +1,4 @@
-package com.example.libreriaMarketCatalogService;
+package com.example.libreriaMarketCatalogService.service;
 
 import com.example.libreriaMarketCatalogService.dto.ProductoInputDTO;
 import com.example.libreriaMarketCatalogService.dto.ProductoResponseDTO;
@@ -8,7 +8,6 @@ import com.example.libreriaMarketCatalogService.model.Producto;
 import com.example.libreriaMarketCatalogService.model.Proveedor;
 import com.example.libreriaMarketCatalogService.repository.ProductoRepository;
 import com.example.libreriaMarketCatalogService.repository.ProveedorRepository;
-import com.example.libreriaMarketCatalogService.service.ProductoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProveedorControllerV2.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.example.libreriaMarketCatalogService.controller</a> &gt; <span class="el_source">ProveedorControllerV2.java</span></div><h1>ProveedorControllerV2.java</h1><pre class="source lang-java linenums">package com.example.libreriaMarketCatalogService.controller;
+
+import com.example.libreriaMarketCatalogService.assemblers.ProveedorModelAssembler;
+import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
+import com.example.libreriaMarketCatalogService.service.ProveedorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping(&quot;/api/v2/proveedores&quot;)
+<span class="fc" id="L33">public class ProveedorControllerV2 {</span>
+
+<span class="fc" id="L35">    private static final Logger logger = LoggerFactory.getLogger(ProveedorControllerV2.class.getName());</span>
+    
+    @Autowired
+    private ProveedorService service;
+
+    @Autowired
+    private ProveedorModelAssembler assembler;
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = &quot;200&quot;,
+                    description = &quot;Se han encontrado registros&quot;,
+                    content = @Content(
+                            mediaType = &quot;application/json&quot;,
+                            array = @ArraySchema(schema = @Schema(implementation = ProveedorDTO.class))
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se han encontrado el registros&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Lista todos&quot;, description = &quot;Muestra todos los registros de proveedores&quot;)
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity&lt;CollectionModel&lt;EntityModel&lt;ProveedorDTO.Response&gt;&gt;&gt; listAll() {
+<span class="fc" id="L67">        String logMsgRequest = &quot;Recibiendo solicitud para buscar listado de proveedores.&quot;;</span>
+<span class="fc" id="L68">        String logMsg = &quot;Solicitud para buscar listado de proveedores&quot;;</span>
+<span class="fc" id="L69">        logger.info(logMsgRequest);</span>
+<span class="fc" id="L70">        List&lt;EntityModel&lt;ProveedorDTO.Response&gt;&gt; listadoDTOs = service.listar().stream().map(assembler::toModel).collect(Collectors.toList());</span>
+
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if(!listadoDTOs.isEmpty()){</span>
+<span class="fc" id="L73">                logger.info(logMsg + &quot;-&gt; encontrado(s) y listado(s)&quot;);</span>
+<span class="fc" id="L74">                return ResponseEntity.ok(CollectionModel.of(listadoDTOs, </span>
+<span class="fc" id="L75">                        linkTo(methodOn(ProveedorControllerV2.class).listAll()).withSelfRel()));</span>
+        }
+<span class="fc" id="L77">        logger.info(logMsg + &quot;-&gt; sin coincidencias&quot;);</span>
+<span class="fc" id="L78">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = &quot;200&quot;,
+                    description = &quot;Se ha encontrado el registro&quot;,
+                    content = @Content(
+                            mediaType = &quot;application/json&quot;,
+                            schema = @Schema(implementation = ProveedorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se ha encontrado el registro de proveedor&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Busca por ID&quot;, description = &quot;Encuentra proveedor por ID&quot;)
+    @GetMapping(value = &quot;/{id}&quot;, produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity&lt;EntityModel&lt;ProveedorDTO.Response&gt;&gt; findById(@PathVariable Long id) {
+<span class="fc" id="L105">        String logMsgRequest = &quot;Recibiendo solicitud para buscar proveedor por ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L106">        String logMsg = &quot;Solicitud para buscar proveedor por ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L107">        logger.info(logMsgRequest);</span>
+
+<span class="fc" id="L109">        ProveedorDTO.Response dto = service.obtenerPorId(id);</span>
+
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if(dto != null){</span>
+<span class="fc" id="L112">                logger.info(logMsg + &quot;-&gt; encontrado&quot;);</span>
+<span class="fc" id="L113">                return ResponseEntity.ok(assembler.toModel(dto));</span>
+        }
+
+<span class="nc" id="L116">        logger.info(logMsg + &quot;-&gt; no encontrado&quot;);</span>
+
+<span class="nc" id="L118">        return ResponseEntity.notFound().build();</span>
+    }
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = &quot;201&quot;,
+                    description = &quot;Se ha guardado el registro&quot;,
+                    content = @Content(
+                            mediaType = &quot;application/json&quot;,
+                            schema = @Schema(implementation = ProveedorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;409&quot;,
+                    description = &quot;Conflicto al guardar&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Crea registro proveedor&quot;, description = &quot;Guarda nuevo proveedor&quot;)
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity&lt;EntityModel&lt;ProveedorDTO.Response&gt;&gt; crear(@Valid @RequestBody ProveedorDTO.Request dto) {
+<span class="fc" id="L145">        String logMsgRequest = &quot;Recibiendo solicitud para crear proveedor&quot;;</span>
+<span class="fc" id="L146">        String logMsg = &quot;Solicitud para crear proveedor&quot;;</span>
+<span class="fc" id="L147">        logger.info(logMsgRequest);</span>
+
+<span class="fc" id="L149">        ProveedorDTO.Response created = service.guardar(dto);</span>
+<span class="fc" id="L150">        URI location = linkTo(methodOn(ProveedorControllerV2.class).findById(created.getId())).toUri();</span>
+
+<span class="fc" id="L152">        logger.info(logMsg + &quot;-&gt; creado con ID Proveedor: {}, Nombre {}, Contacto {}&quot;, </span>
+<span class="fc" id="L153">                                                                                created.getId(),</span>
+<span class="fc" id="L154">                                                                                created.getNombre(),</span>
+<span class="fc" id="L155">                                                                                created.getContacto());</span>
+
+<span class="fc" id="L157">        return ResponseEntity.created(location).body(assembler.toModel(created));</span>
+    }
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = &quot;200&quot;,
+                    description = &quot;Se ha actualizado el registro&quot;,
+                    content = @Content(
+                            mediaType = &quot;application/json&quot;,
+                            schema = @Schema(implementation = ProveedorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se han encontrado registros&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Actualizar informacion&quot;, description = &quot;Actualiza datos de proveedor encontrado por ID&quot;)
+    @PutMapping(value = &quot;/{id}&quot;, produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity&lt;EntityModel&lt;ProveedorDTO.Response&gt;&gt; actualizar(@PathVariable Long id, @Valid @RequestBody ProveedorDTO.Request dto) {
+<span class="fc" id="L184">        String logMsgRequest = &quot;Recibiendo solicitud para actualizar proveedor con ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L185">        String logMsg = &quot;Solicitud para actualizar proveedor con ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L186">        logger.info(logMsgRequest);</span>
+
+<span class="fc" id="L188">        ProveedorDTO.Response updated = service.actualizar(id, dto);</span>
+        
+<span class="fc" id="L190">        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(&quot;/{id}&quot;).buildAndExpand(updated.getId()).toUri();</span>
+
+<span class="fc" id="L192">        logger.info(logMsg + &quot;-&gt; actualizado&quot;);</span>
+
+<span class="fc" id="L194">        return ResponseEntity.status(200).location(location).body(assembler.toModel(updated));</span>
+    }
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = &quot;204&quot;,
+                    description = &quot;Se ha eliminado el registro de proveedor&quot;,
+                    content = @Content(
+                            mediaType = &quot;application/json&quot;,
+                            schema = @Schema(implementation = ProveedorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se ha encontrado registro de proveedor&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Eliminar registro&quot;, description = &quot;Borra registro de proveedor&quot;)
+    @DeleteMapping(value = &quot;/{id}&quot;, produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity&lt;Void&gt; eliminar(@PathVariable Long id) {
+<span class="fc" id="L221">        String logMsgRequest = &quot;Recibiendo solicitud para borrar proveedor con ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L222">        String logMsg = &quot;Solicitud para borrar proveedor con iD: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L223">        logger.info(logMsgRequest);</span>
+
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">        if(service.eliminar(id)){</span>
+<span class="fc" id="L226">                logger.info(logMsg + &quot;-&gt; borrado&quot;);</span>
+<span class="fc" id="L227">                return ResponseEntity.noContent().build();</span>
+        }
+
+<span class="nc" id="L230">        logger.info(logMsg + &quot;-&gt; no encontrado&quot;);</span>
+<span class="nc" id="L231">        return ResponseEntity.notFound().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

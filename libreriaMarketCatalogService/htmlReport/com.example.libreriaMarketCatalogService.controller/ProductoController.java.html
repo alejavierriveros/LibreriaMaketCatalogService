@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.example.libreriaMarketCatalogService.controller</a> &gt; <span class="el_source">ProductoController.java</span></div><h1>ProductoController.java</h1><pre class="source lang-java linenums">package com.example.libreriaMarketCatalogService.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import jakarta.validation.Valid;
+
+import java.net.URI;
+import java.util.List;
+
+import com.example.libreriaMarketCatalogService.dto.*;
+import com.example.libreriaMarketCatalogService.mappers.*;
+import com.example.libreriaMarketCatalogService.service.*;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@RestController
+@RequestMapping(&quot;/api/v1/productos&quot;)
+@Tag(name = &quot;Producto&quot;, description = &quot;Gestion de productos&quot;)
+<span class="fc" id="L30">public class ProductoController {</span>
+
+<span class="fc" id="L32">    private static final Logger logger = LoggerFactory.getLogger(ProductoController.class.getName());</span>
+
+    @Autowired
+    private ProductoService service;
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                responseCode = &quot;200&quot;,
+                description = &quot;Productos encontrados&quot;,
+                content = @Content(
+                    mediaType = &quot;application/json&quot;,
+                    array = @ArraySchema(schema = @Schema(implementation = ProductoResponseDTO.class))
+                )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se han encontrado productos&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Lista todos&quot;, description = &quot;Muestra todos los registros de productos&quot;)
+    @GetMapping
+    public ResponseEntity&lt;List&lt;ProductoResponseDTO&gt;&gt; listAll() {
+<span class="fc" id="L61">        String logMsgRequest = &quot;Recibiendo solicitud para buscar listado de productos.&quot;;</span>
+<span class="fc" id="L62">        String logMsg = &quot;Solicitud para buscar listado de productos.&quot;;</span>
+<span class="fc" id="L63">        logger.info(logMsgRequest);</span>
+<span class="fc" id="L64">        List&lt;ProductoResponseDTO&gt; listadoDTO = service.listar();</span>
+
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (!listadoDTO.isEmpty()){</span>
+<span class="fc" id="L67">            logger.info(logMsg + &quot;=&gt; encontrado(s) y enlistado(s).&quot;);</span>
+<span class="fc" id="L68">            return ResponseEntity.ok(listadoDTO);</span>
+        }
+<span class="fc" id="L70">        logger.info(logMsg + &quot;=&gt; sin coincidencias (vacío).&quot;);</span>
+<span class="fc" id="L71">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                responseCode = &quot;200&quot;,
+                description = &quot;Producto encontrado&quot;,
+                content = @Content(
+                    mediaType = &quot;application/json&quot;,
+                    schema = @Schema(implementation = ProductoResponseDTO.class)
+                )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se ha encontrado el producto&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Busca por ID&quot;, description = &quot;Encuentra producto por ID&quot;)
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;ProductoResponseDTO&gt; findById(@PathVariable Long id) {
+<span class="fc" id="L98">        String logMsgRequest = &quot;Recibiendo solicitud para buscar producto por ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L99">        String logMsg = &quot;Solicitud para buscar producto por ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L100">        logger.info(logMsgRequest);</span>
+<span class="fc" id="L101">        ProductoResponseDTO dto = service.obtenerPorId(id);</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        if (dto != null){</span>
+<span class="fc" id="L103">            logger.info(logMsg + &quot;=&gt; encontrado.&quot;);</span>
+<span class="fc" id="L104">            return ResponseEntity.ok(dto);</span>
+        }
+<span class="nc" id="L106">        logger.info(logMsg + &quot;=&gt; no encontrado.&quot;);</span>
+<span class="nc" id="L107">        return ResponseEntity.notFound().build();</span>
+    }
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                responseCode = &quot;200&quot;,
+                description = &quot;Sí existe&quot;,
+                content = @Content(
+                    mediaType = &quot;application/json&quot;,
+                    schema = @Schema(implementation = ProductoResponseDTO.class)
+                )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se ha encontrado&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Valida existencia&quot;, description = &quot;Verifica si el producto existe o no según su ID&quot;)
+    @GetMapping(&quot;/exists-by-id/{id}&quot;)
+    public ResponseEntity&lt;Boolean&gt; existsById(@PathVariable Long id) {
+<span class="nc" id="L134">        return ResponseEntity.ok(service.existsById(id));</span>
+    }
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                responseCode = &quot;201&quot;,
+                description = &quot;Producto guardado&quot;,
+                content = @Content(
+                    mediaType = &quot;application/json&quot;,
+                    schema = @Schema(implementation = ProductoResponseDTO.class)
+                )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;409&quot;,
+                    description = &quot;Conflicto al hacer solicitud&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Crea registro producto&quot;, description = &quot;Guarda nuevo producto&quot;)
+    @PostMapping
+    public ResponseEntity&lt;ProductoResponseDTO&gt; crear(@Valid @RequestBody ProductoInputDTO dto) {
+<span class="fc" id="L161">        String logMsgRequest = &quot;Recibiendo solicitud para crear/guardar producto.&quot;;</span>
+<span class="fc" id="L162">        String logMsg = &quot;Solicitud para crear/guardar producto.&quot;;</span>
+<span class="fc" id="L163">        logger.info(logMsgRequest);</span>
+<span class="fc" id="L164">        ProductoResponseDTO created = service.guardar(dto);</span>
+<span class="fc" id="L165">        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(&quot;/{id}&quot;).buildAndExpand(created.getId()).toUri();</span>
+        //de componentes de constructor URI // de la actual request //ruta de id // sacar la id del obj creado // transformar a URI.
+<span class="fc" id="L167">        logger.info(logMsg + </span>
+            &quot;=&gt; creado con ID Producto: {}, ID Producto: {}, Titulo: {}, Autor: {}, Editorial: {}, Categoria: {}, Anio Publicacion: {}, ISBN: {}, Descripcion: {}, ID Proveedor: {}, Nombre Proveedor: {}&quot;, 
+<span class="fc" id="L169">                                                                                                            created.getId(), </span>
+<span class="fc" id="L170">                                                                                                            created.getTitulo(), </span>
+<span class="fc" id="L171">                                                                                                            created.getAutor(), </span>
+<span class="fc" id="L172">                                                                                                            created.getEditorial(),</span>
+<span class="fc" id="L173">                                                                                                            created.getCategoria(),</span>
+<span class="fc" id="L174">                                                                                                            created.getAnioPublicacion(),</span>
+<span class="fc" id="L175">                                                                                                            created.getIsbn(),</span>
+<span class="fc" id="L176">                                                                                                            created.getDescripcion(),</span>
+<span class="fc" id="L177">                                                                                                            created.getProveedorId(),</span>
+<span class="fc" id="L178">                                                                                                            created.getProveedorNombre()</span>
+                                                                                                        );
+<span class="fc" id="L180">        return ResponseEntity.created(location).body(created);</span>
+        //devuelve el estado y la locación //devuelve el objeto creado
+    }
+
+     @ApiResponses(value = {
+            @ApiResponse(
+                responseCode = &quot;200&quot;,
+                description = &quot;Producto actualizado&quot;,
+                content = @Content(
+                    mediaType = &quot;application/json&quot;,
+                    schema = @Schema(implementation = ProductoResponseDTO.class)
+                )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se ha encontrado producto&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Actualizar informacion&quot;, description = &quot;Actualiza datos de producto encontrado por ID&quot;)
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;ProductoResponseDTO&gt; actualizar(@PathVariable Long id, @Valid @RequestBody ProductoInputDTO dto) {
+
+<span class="fc" id="L209">        String logMsgRequest = &quot;Recibiendo solicitud para actualizar producto con ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L210">        String logMsg = &quot;Solicitud para actualizar producto con ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L211">        logger.info(logMsgRequest);</span>
+        
+<span class="fc" id="L213">        ProductoResponseDTO updated = service.actualizar(id, ProductoMapper.toEntity(dto), dto.getProveedorId());</span>
+        
+<span class="fc" id="L215">        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(&quot;/{id}&quot;).buildAndExpand(updated.getId()).toUri();</span>
+        //de componentes de constructor URI // de la actual request //ruta de id // sacar la id del obj creado // transformar a URI.
+        
+<span class="fc" id="L218">        logger.info(logMsg + &quot; =&gt; actualizado.&quot;);</span>
+<span class="fc" id="L219">        return ResponseEntity.status(200).location(location).body(updated);</span>
+        //devuelve el estado y la locación //devuelve el objeto creado
+    }
+
+    @ApiResponses(value = {
+            @ApiResponse(
+                responseCode = &quot;204&quot;,
+                description = &quot;Producto eliminado&quot;,
+                content = @Content(
+                    mediaType = &quot;application/json&quot;,
+                    schema = @Schema(implementation = ProductoResponseDTO.class)
+                )
+            ),
+            @ApiResponse(
+                    responseCode = &quot;400&quot;,
+                    description = &quot;Sintáxis incorrecta&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            ),
+            @ApiResponse(
+                    responseCode = &quot;404&quot;,
+                    description = &quot;No se ha encontrado producto&quot;,
+                    content = @Content(schema = @Schema(hidden = true))
+            )
+        }
+    )
+    @Operation(summary = &quot;Eliminar registro&quot;, description = &quot;Borra registro de producto&quot;)
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; eliminar(@PathVariable Long id) {
+<span class="fc" id="L247">        String logMsgRequest = &quot;Recibiendo solicitud para borrar producto con ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L248">        String logMsg = &quot;Solicitud para borrar producto con ID: &quot; + id + &quot;.&quot;;</span>
+<span class="fc" id="L249">        logger.info(logMsgRequest);</span>
+<span class="pc bpc" id="L250" title="1 of 2 branches missed.">        if(service.eliminar(id)){</span>
+<span class="fc" id="L251">            logger.info(logMsg + &quot; =&gt; encontrado y borrado.&quot;);</span>
+<span class="fc" id="L252">            return ResponseEntity.noContent().build();</span>
+        }
+<span class="nc" id="L254">        logger.info(logMsg + &quot; =&gt; no encontrado.&quot;);</span>
+<span class="nc" id="L255">        return ResponseEntity.notFound().build();</span>
+    }
+
+//    @PostMapping(&quot;/{id}/comprar&quot;)
+//    public ProductoResponseDTO comprar(@PathVariable Long id, @RequestParam int cantidad) {
+//        return ProductoMapper.toDTO(service.comprar(id, cantidad));
+//    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

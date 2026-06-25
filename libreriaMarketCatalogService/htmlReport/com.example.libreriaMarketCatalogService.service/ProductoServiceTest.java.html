@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductoServiceTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.example.libreriaMarketCatalogService.service</a> &gt; <span class="el_source">ProductoServiceTest.java</span></div><h1>ProductoServiceTest.java</h1><pre class="source lang-java linenums">package com.example.libreriaMarketCatalogService.service;
+
+import com.example.libreriaMarketCatalogService.dto.ProductoInputDTO;
+import com.example.libreriaMarketCatalogService.dto.ProductoResponseDTO;
+import com.example.libreriaMarketCatalogService.exceptions.BadRequestException;
+import com.example.libreriaMarketCatalogService.exceptions.RecursoNoEncontradoException;
+import com.example.libreriaMarketCatalogService.model.Producto;
+import com.example.libreriaMarketCatalogService.model.Proveedor;
+import com.example.libreriaMarketCatalogService.repository.ProductoRepository;
+import com.example.libreriaMarketCatalogService.repository.ProveedorRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@SpringBootTest
+<span class="fc" id="L25">public class ProductoServiceTest {</span>
+    @MockitoBean
+    private ProductoRepository productoRepository;
+
+    @MockitoBean
+    private ProveedorRepository proveedorRepository;
+
+    @Autowired
+    private ProductoService productoService;
+
+    private ProductoInputDTO productoInputDTO;
+    private Producto productoUno;
+    private Producto productoDos;
+    private Producto productoUpdate;
+
+    private Proveedor proveedor;
+
+<span class="fc" id="L42">    private final RecursoNoEncontradoException recursoNoEncontradoExceptionProducto = new RecursoNoEncontradoException(&quot;Producto no encontrado&quot;);</span>
+<span class="fc" id="L43">    private final RecursoNoEncontradoException recursoNoEncontradoExceptionProveedor = new RecursoNoEncontradoException(&quot;Proveedor no existe&quot;);</span>
+<span class="fc" id="L44">    private final BadRequestException badRequestExceptionProductoYaExiste = new BadRequestException(&quot;Ya existe un producto con ese ISBN&quot;);</span>
+<span class="fc" id="L45">    private final BadRequestException badRequestExceptionISBNRegistrado = new BadRequestException(&quot;ISBN ya registrado&quot;);</span>
+
+    @BeforeEach
+    void setUp(){
+<span class="fc" id="L49">        proveedor = new Proveedor(1L, &quot;Distribuidora Libros&quot;, &quot;libros@distro.com&quot;, List.of());</span>
+
+<span class="fc" id="L51">        productoUno = new Producto(3L, &quot;Java for Dummies&quot;, &quot;Terry A. Burd&quot;, &quot;Wiley&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L52">                2022, 26725.0, &quot;978-111-98-6164-5&quot;, &quot;desc&quot;, proveedor);</span>
+
+<span class="fc" id="L54">        productoDos = new Producto(5L, &quot;Clean Code&quot;, &quot;Robert C. Martin&quot;, &quot;Prentice Hall&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L55">                2008, 30000.0, &quot;978-013-23-5088-4&quot;, &quot;desc&quot;, proveedor);</span>
+
+<span class="fc" id="L57">        proveedor.setProductos(List.of(productoUno, productoDos));</span>
+
+<span class="fc" id="L59">        productoInputDTO = new ProductoInputDTO(&quot;Java for Dummies&quot;, &quot;Terry A. Burd&quot;, &quot;Wiley&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L60">                2022, 26725.0, &quot;978-111-98-6164-5&quot;, &quot;desc&quot;, 1L, &quot;Distribuidora Libros&quot;);</span>
+
+<span class="fc" id="L62">        productoUpdate = new Producto(3L, &quot;Java for Dummies&quot;, &quot;Terry A. Burd&quot;, &quot;Wiley&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L63">                2017, 20000.0, &quot;978-111-98-6164-5&quot;, &quot;Descripción&quot;, proveedor);</span>
+<span class="fc" id="L64">    }</span>
+
+    @Test
+    void listarTest(){
+<span class="fc" id="L68">        when(productoRepository.findAll()).thenReturn(List.of(productoUno, productoDos));</span>
+
+<span class="fc" id="L70">        List&lt;ProductoResponseDTO&gt; productos = productoService.listar();</span>
+
+<span class="fc" id="L72">        assertNotNull(productos);</span>
+<span class="fc" id="L73">        assertFalse(productos.isEmpty());</span>
+<span class="fc" id="L74">        verify(productoRepository).findAll();</span>
+<span class="fc" id="L75">    }</span>
+
+    @Test
+    void listarVacioTest(){
+<span class="fc" id="L79">        when(productoRepository.findAll()).thenReturn(List.of());</span>
+<span class="fc" id="L80">        List&lt;ProductoResponseDTO&gt; productos = productoService.listar();</span>
+
+<span class="fc" id="L82">        assertTrue(productos.isEmpty());</span>
+<span class="fc" id="L83">        verify(productoRepository).findAll();</span>
+<span class="fc" id="L84">    }</span>
+
+    @Test
+    void obtenerPorIdTest(){
+<span class="fc" id="L88">        Long id = 3L;</span>
+<span class="fc" id="L89">        when(productoRepository.findById(id)).thenReturn(Optional.of(productoUno));</span>
+
+<span class="fc" id="L91">        ProductoResponseDTO productoResponseDTO = productoService.obtenerPorId(id);</span>
+
+<span class="fc" id="L93">        assertEquals(productoResponseDTO.getId(), productoUno.getId());</span>
+<span class="fc" id="L94">        verify(productoRepository).findById(id);</span>
+<span class="fc" id="L95">    }</span>
+
+    @Test
+    void obtenerPorIdNoEncontradoTest(){
+<span class="fc" id="L99">        Long id = 3L;</span>
+<span class="fc" id="L100">        when(productoRepository.findById(id)).thenReturn(Optional.empty());</span>
+
+<span class="pc" id="L102">        Exception exception = assertThrows(RecursoNoEncontradoException.class, () -&gt; productoService.obtenerPorId(id));</span>
+
+<span class="fc" id="L104">        String expectedMessage = recursoNoEncontradoExceptionProducto.getMessage();</span>
+<span class="fc" id="L105">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L107">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L108">        verify(productoRepository).findById(id);</span>
+<span class="fc" id="L109">    }</span>
+
+    @Test
+    void guardarTest(){
+<span class="fc" id="L113">        when(productoRepository.save(any(Producto.class))).thenAnswer(invocation -&gt; invocation.getArgument(0));</span>
+<span class="fc" id="L114">        when(productoRepository.findByIsbn(productoUno.getIsbn())).thenReturn(Optional.empty());</span>
+<span class="fc" id="L115">        when(proveedorRepository.existsById(proveedor.getId())).thenReturn(true);</span>
+
+<span class="fc" id="L117">        ProductoResponseDTO productoResponseDTO = productoService.guardar(productoInputDTO);</span>
+
+<span class="fc" id="L119">        assertNotNull(productoResponseDTO);</span>
+<span class="fc" id="L120">        verify(productoRepository).save(any(Producto.class));</span>
+<span class="fc" id="L121">        verify(productoRepository).findByIsbn(productoUno.getIsbn());</span>
+<span class="fc" id="L122">        verify(proveedorRepository).existsById(proveedor.getId());</span>
+<span class="fc" id="L123">    }</span>
+
+    @Test
+    void guardarYaExistenteTest(){
+<span class="fc" id="L127">        when(productoRepository.findByIsbn((productoUno.getIsbn()))).thenReturn(Optional.of(productoDos));</span>
+
+<span class="pc" id="L129">        Exception exception = assertThrows(BadRequestException.class, () -&gt; productoService.guardar(productoInputDTO));</span>
+
+<span class="fc" id="L131">        String expectedMessage = badRequestExceptionProductoYaExiste.getMessage();</span>
+<span class="fc" id="L132">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L134">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L135">        verify(productoRepository, never()).save(any(Producto.class));</span>
+<span class="fc" id="L136">        verify(productoRepository).findByIsbn(productoUno.getIsbn());</span>
+<span class="fc" id="L137">    }</span>
+
+    @Test
+    void guardarProveedorNoExistenteTest(){
+<span class="fc" id="L141">        when(proveedorRepository.existsById(proveedor.getId())).thenReturn(false);</span>
+
+<span class="pc" id="L143">        Exception exception = assertThrows(RecursoNoEncontradoException.class, () -&gt; productoService.guardar(productoInputDTO));</span>
+
+<span class="fc" id="L145">        String expectedMessage = recursoNoEncontradoExceptionProveedor.getMessage();</span>
+<span class="fc" id="L146">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L148">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L149">        verify(productoRepository, never()).save(any(Producto.class));</span>
+<span class="fc" id="L150">        verify(proveedorRepository).existsById(proveedor.getId());</span>
+<span class="fc" id="L151">    }</span>
+
+    @Test
+    void existsByIdTest(){
+<span class="fc" id="L155">        Long id = 3L;</span>
+<span class="fc" id="L156">        when(productoRepository.existsById(id)).thenReturn(true);</span>
+<span class="fc" id="L157">        boolean resultado = productoService.existsById(id);</span>
+<span class="fc" id="L158">        assertTrue(resultado);</span>
+<span class="fc" id="L159">        verify(productoRepository).existsById(id);</span>
+<span class="fc" id="L160">    }</span>
+
+    @Test
+    void actualizarTest(){
+<span class="fc" id="L164">        Long id = 3L;</span>
+<span class="fc" id="L165">        when(productoRepository.save(any(Producto.class))).thenAnswer(invocation -&gt; invocation.getArgument(0));</span>
+<span class="fc" id="L166">        when(productoRepository.findById(id)).thenReturn(Optional.of(productoUno));</span>
+<span class="fc" id="L167">        when(productoRepository.findByIsbn(productoUpdate.getIsbn())).thenReturn(Optional.empty());</span>
+<span class="fc" id="L168">        when(proveedorRepository.findById(proveedor.getId())).thenReturn(Optional.of(proveedor));</span>
+
+<span class="fc" id="L170">        ProductoResponseDTO productoResponseDTO = productoService.actualizar(id, productoUpdate, proveedor.getId());</span>
+
+<span class="fc" id="L172">        assertNotNull(productoResponseDTO);</span>
+<span class="fc" id="L173">        assertEquals(productoResponseDTO.getId(), productoUpdate.getId());</span>
+<span class="fc" id="L174">        verify(productoRepository).save(any(Producto.class));</span>
+<span class="fc" id="L175">        verify(productoRepository).findById(id);</span>
+<span class="fc" id="L176">        verify(productoRepository).findByIsbn(productoUpdate.getIsbn());</span>
+<span class="fc" id="L177">        verify(proveedorRepository).findById(proveedor.getId());</span>
+<span class="fc" id="L178">    }</span>
+
+    @Test
+    void actualizarProductoNoEncontradoTest(){
+<span class="fc" id="L182">        Long id = 3L;</span>
+<span class="fc" id="L183">        when(productoRepository.findById(id)).thenReturn(Optional.empty());</span>
+
+<span class="pc" id="L185">        Exception exception = assertThrows(RecursoNoEncontradoException.class, () -&gt; productoService.actualizar(id, productoUpdate, proveedor.getId()));</span>
+
+<span class="fc" id="L187">        String expectedMessage = recursoNoEncontradoExceptionProducto.getMessage();</span>
+<span class="fc" id="L188">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L190">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L191">        verify(productoRepository).findById(id);</span>
+<span class="fc" id="L192">        verify(productoRepository, never()).save(any(Producto.class));</span>
+<span class="fc" id="L193">    }</span>
+
+    @Test
+    void actualizarISBNyaRegistrado(){
+<span class="fc" id="L197">        Long id = 3L;</span>
+<span class="fc" id="L198">        when(productoRepository.findById(id)).thenReturn(Optional.of(productoUno));</span>
+<span class="fc" id="L199">        when(productoRepository.findByIsbn(productoUpdate.getIsbn())).thenReturn(Optional.of(productoDos));</span>
+
+<span class="pc" id="L201">        Exception exception = assertThrows(BadRequestException.class, () -&gt; productoService.actualizar(id, productoUpdate, proveedor.getId()));</span>
+
+<span class="fc" id="L203">        String expectedMessage = badRequestExceptionISBNRegistrado.getMessage();</span>
+<span class="fc" id="L204">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L206">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L207">        verify(productoRepository).findByIsbn(productoUpdate.getIsbn());</span>
+<span class="fc" id="L208">        verify(productoRepository, never()).save(any(Producto.class));</span>
+<span class="fc" id="L209">    }</span>
+
+    @Test
+    void actualizarProveedorNoExisteTest(){
+<span class="fc" id="L213">        Long id = 3L;</span>
+<span class="fc" id="L214">        when(productoRepository.findById(id)).thenReturn(Optional.of(productoUno));</span>
+<span class="fc" id="L215">        when(productoRepository.findByIsbn(productoUpdate.getIsbn())).thenReturn(Optional.empty());</span>
+<span class="fc" id="L216">        when(proveedorRepository.findById(proveedor.getId())).thenReturn(Optional.empty());</span>
+
+<span class="pc" id="L218">        Exception exception = assertThrows(RecursoNoEncontradoException.class, () -&gt; productoService.actualizar(id, productoUpdate, proveedor.getId()));</span>
+
+<span class="fc" id="L220">        String expectedMessage = recursoNoEncontradoExceptionProveedor.getMessage();</span>
+<span class="fc" id="L221">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L223">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L224">        verify(productoRepository).findById(id);</span>
+<span class="fc" id="L225">        verify(productoRepository).findByIsbn(productoUpdate.getIsbn());</span>
+<span class="fc" id="L226">        verify(proveedorRepository).findById(proveedor.getId());</span>
+<span class="fc" id="L227">        verify(productoRepository, never()).save(any(Producto.class));</span>
+<span class="fc" id="L228">    }</span>
+
+    @Test
+    void deleteTest(){
+<span class="fc" id="L232">        Long id = 3L;</span>
+<span class="fc" id="L233">        when(productoRepository.existsById(id)).thenReturn(true);</span>
+<span class="fc" id="L234">        boolean resultado = productoService.eliminar(id);</span>
+<span class="fc" id="L235">        assertTrue(resultado);</span>
+<span class="fc" id="L236">        verify(productoRepository).existsById(id);</span>
+<span class="fc" id="L237">        verify(productoRepository).deleteById(id);</span>
+<span class="fc" id="L238">    }</span>
+
+    @Test
+    void deleteNoEncontradoTest(){
+<span class="fc" id="L242">        Long id = 3L;</span>
+<span class="fc" id="L243">        when(productoRepository.existsById(id)).thenReturn(false);</span>
+<span class="pc" id="L244">        Exception exception = assertThrows(RecursoNoEncontradoException.class, () -&gt; productoService.eliminar(id));</span>
+
+<span class="fc" id="L246">        String expectedMessage = recursoNoEncontradoExceptionProducto.getMessage();</span>
+<span class="fc" id="L247">        String actualMessage = exception.getMessage();</span>
+
+<span class="fc" id="L249">        assertTrue(actualMessage.contains(expectedMessage));</span>
+<span class="fc" id="L250">        verify(productoRepository).existsById(id);</span>
+<span class="fc" id="L251">        verify(productoRepository, never()).deleteById(id);</span>
+<span class="fc" id="L252">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

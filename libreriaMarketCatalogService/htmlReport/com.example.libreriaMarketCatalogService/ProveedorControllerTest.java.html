@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProveedorControllerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.example.libreriaMarketCatalogService</a> &gt; <span class="el_source">ProveedorControllerTest.java</span></div><h1>ProveedorControllerTest.java</h1><pre class="source lang-java linenums">package com.example.libreriaMarketCatalogService;
+
+import com.example.libreriaMarketCatalogService.controller.ProveedorController;
+import com.example.libreriaMarketCatalogService.dto.ProveedorDTO;
+import com.example.libreriaMarketCatalogService.exceptions.BadRequestException;
+import com.example.libreriaMarketCatalogService.exceptions.RecursoNoEncontradoException;
+import com.example.libreriaMarketCatalogService.service.ProveedorService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(controllers = ProveedorController.class, excludeAutoConfiguration = ServletWebSecurityAutoConfiguration.class)
+<span class="fc" id="L28">public class ProveedorControllerTest {</span>
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private ProveedorService proveedorService;
+
+    private ProveedorDTO.Response proveedorResponseUno;
+    private ProveedorDTO.Response proveedorResponseDos;
+    private ProveedorDTO.Request proveedorRequest;
+
+<span class="fc" id="L42">    private final RecursoNoEncontradoException recursoNoEncontradoExceptionProveedor = new RecursoNoEncontradoException(&quot;Proveedor no encontrado&quot;);</span>
+<span class="fc" id="L43">    private final BadRequestException badRequestExceptionProveedorYaExiste = new BadRequestException(&quot;Ya existe un proveedor con ese nombre&quot;);</span>
+<span class="fc" id="L44">    private final BadRequestException badRequestExceptionProveedorConProductos = new BadRequestException(&quot;No se puede eliminar proveedor con productos asociados&quot;);</span>
+    Long id; //id ejemplo
+
+    @BeforeEach
+    void setUp(){
+<span class="fc" id="L49">        id = 1L;</span>
+        //para actualizar tiene los mismos datos por conveniencia
+<span class="fc" id="L51">        proveedorRequest = new ProveedorDTO.Request (&quot;Distribuidora Libros&quot;, &quot;libros@distro.com&quot;, List.of());</span>
+
+<span class="fc" id="L53">        proveedorResponseUno = new ProveedorDTO.Response(1L, &quot;Distribuidora Libros&quot;, &quot;libros@distro.com&quot;);</span>
+<span class="fc" id="L54">        proveedorResponseDos = new ProveedorDTO.Response(2L, &quot;Proveedor Test&quot;, &quot;libros@distro.com&quot;);</span>
+<span class="fc" id="L55">    }</span>
+
+    @Test
+    void listAllTest() throws Exception{
+<span class="fc" id="L59">        when(proveedorService.listar()).thenReturn(List.of(proveedorResponseUno, proveedorResponseDos));</span>
+<span class="fc" id="L60">        mockMvc.perform(get(&quot;/api/v1/proveedores&quot;))</span>
+<span class="fc" id="L61">                .andExpect(status().isOk())</span>
+<span class="fc" id="L62">                .andExpect(jsonPath(&quot;$.length()&quot;).value(2))</span>
+<span class="fc" id="L63">                .andExpect(jsonPath(&quot;$[0].nombre&quot;).value(&quot;Distribuidora Libros&quot;))</span>
+<span class="fc" id="L64">                .andExpect(jsonPath(&quot;$[1].nombre&quot;).value(&quot;Proveedor Test&quot;));</span>
+<span class="fc" id="L65">        verify(proveedorService).listar();</span>
+<span class="fc" id="L66">    }</span>
+
+    @Test
+    void findAllEmptyTest() throws Exception{
+<span class="fc" id="L70">        when(proveedorService.listar()).thenReturn(List.of());</span>
+<span class="fc" id="L71">        mockMvc.perform(get(&quot;/api/v1/proveedores&quot;))</span>
+<span class="fc" id="L72">                .andExpect(status().isNoContent());</span>
+<span class="fc" id="L73">        verify(proveedorService).listar();</span>
+<span class="fc" id="L74">    }</span>
+
+    @Test
+    void findByIdTest() throws Exception{
+<span class="fc" id="L78">        when(proveedorService.obtenerPorId(id)).thenReturn(proveedorResponseUno);</span>
+<span class="fc" id="L79">        mockMvc.perform(get(&quot;/api/v1/proveedores/{id}&quot;, id))</span>
+<span class="fc" id="L80">                .andExpect(status().isOk())</span>
+<span class="fc" id="L81">                .andExpect(jsonPath(&quot;$.id&quot;).value(id))</span>
+<span class="fc" id="L82">                .andExpect(jsonPath(&quot;$.nombre&quot;).value(&quot;Distribuidora Libros&quot;));</span>
+<span class="fc" id="L83">        verify(proveedorService).obtenerPorId(id);</span>
+<span class="fc" id="L84">    }</span>
+    @Test
+    void findByIdNotFound() throws Exception{
+<span class="fc" id="L87">        when(proveedorService.obtenerPorId(id)).thenThrow(recursoNoEncontradoExceptionProveedor);</span>
+<span class="fc" id="L88">        mockMvc.perform(get(&quot;/api/v1/proveedores/{id}&quot;, id))</span>
+<span class="fc" id="L89">                .andExpect(status().isNotFound())</span>
+<span class="fc" id="L90">                .andExpect(jsonPath(&quot;$.error&quot;).value(recursoNoEncontradoExceptionProveedor.getMessage()));</span>
+<span class="fc" id="L91">        verify(proveedorService).obtenerPorId(id);</span>
+<span class="fc" id="L92">    }</span>
+
+    @Test
+    void crearTest() throws Exception{
+<span class="fc" id="L96">        when(proveedorService.guardar(any(ProveedorDTO.Request.class))).thenReturn(proveedorResponseUno);</span>
+<span class="fc" id="L97">        mockMvc.perform(post(&quot;/api/v1/proveedores&quot;)</span>
+<span class="fc" id="L98">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L99">                        .content(objectMapper.writeValueAsString(proveedorRequest)))</span>
+<span class="fc" id="L100">                .andExpect(status().isCreated())</span>
+<span class="fc" id="L101">                .andExpect(jsonPath(&quot;$.nombre&quot;).value(proveedorRequest.getNombre()));</span>
+<span class="fc" id="L102">        verify(proveedorService).guardar(any(ProveedorDTO.Request.class));</span>
+<span class="fc" id="L103">    }</span>
+
+    @Test
+    void crearProveedorYaExisteTests() throws Exception{
+<span class="fc" id="L107">        when(proveedorService.guardar(any(ProveedorDTO.Request.class))).thenThrow(badRequestExceptionProveedorYaExiste);</span>
+<span class="fc" id="L108">        mockMvc.perform(post(&quot;/api/v1/proveedores&quot;)</span>
+<span class="fc" id="L109">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L110">                        .content(objectMapper.writeValueAsString(proveedorRequest)))</span>
+<span class="fc" id="L111">                .andExpect(status().isBadRequest())</span>
+<span class="fc" id="L112">                .andExpect(jsonPath(&quot;$.error&quot;).value(badRequestExceptionProveedorYaExiste.getMessage()));</span>
+<span class="fc" id="L113">        verify(proveedorService).guardar(any(ProveedorDTO.Request.class));</span>
+<span class="fc" id="L114">    }</span>
+
+    @Test
+    void actualizarTest() throws Exception{
+<span class="fc" id="L118">        when(proveedorService.actualizar(any(Long.class), any(ProveedorDTO.Request.class))).thenReturn(proveedorResponseUno);</span>
+<span class="fc" id="L119">        mockMvc.perform(put(&quot;/api/v1/proveedores/{id}&quot;, id)</span>
+<span class="fc" id="L120">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L121">                        .content(objectMapper.writeValueAsString(proveedorRequest)))</span>
+<span class="fc" id="L122">                .andExpect(status().isOk())</span>
+<span class="fc" id="L123">                .andExpect(jsonPath(&quot;$.id&quot;).value(id));</span>
+<span class="fc" id="L124">        verify(proveedorService).actualizar(any(Long.class), any(ProveedorDTO.Request.class));</span>
+<span class="fc" id="L125">    }</span>
+
+    @Test
+    void actualizarProveedorNoEncontradoTest() throws Exception{
+<span class="fc" id="L129">        when(proveedorService.actualizar(any(Long.class), any(ProveedorDTO.Request.class))).thenThrow(recursoNoEncontradoExceptionProveedor);</span>
+<span class="fc" id="L130">        mockMvc.perform(put(&quot;/api/v1/proveedores/{id}&quot;, id)</span>
+<span class="fc" id="L131">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L132">                        .content(objectMapper.writeValueAsString(proveedorRequest)))</span>
+<span class="fc" id="L133">                .andExpect(status().isNotFound())</span>
+<span class="fc" id="L134">                .andExpect(jsonPath(&quot;$.error&quot;).value(recursoNoEncontradoExceptionProveedor.getMessage()));</span>
+<span class="fc" id="L135">        verify(proveedorService).actualizar(any(Long.class), any(ProveedorDTO.Request.class));</span>
+<span class="fc" id="L136">    }</span>
+
+    @Test
+    void eliminarTest() throws Exception{
+<span class="fc" id="L140">        when(proveedorService.eliminar(id)).thenReturn(true);</span>
+<span class="fc" id="L141">        mockMvc.perform(delete(&quot;/api/v1/proveedores/{id}&quot;, id))</span>
+<span class="fc" id="L142">                .andExpect(status().isNoContent());</span>
+<span class="fc" id="L143">        verify(proveedorService).eliminar(id);</span>
+<span class="fc" id="L144">    }</span>
+
+    @Test
+    void eliminarNoEncontradoTest() throws Exception{
+<span class="fc" id="L148">        when(proveedorService.eliminar(id)).thenThrow(recursoNoEncontradoExceptionProveedor);</span>
+<span class="fc" id="L149">        mockMvc.perform(delete(&quot;/api/v1/proveedores/{id}&quot;, id))</span>
+<span class="fc" id="L150">                .andExpect(status().isNotFound())</span>
+<span class="fc" id="L151">                .andExpect(jsonPath(&quot;$.error&quot;).value(recursoNoEncontradoExceptionProveedor.getMessage()));</span>
+<span class="fc" id="L152">        verify(proveedorService).eliminar(id);</span>
+<span class="fc" id="L153">    }</span>
+
+    @Test
+    void eliminarConProductosAsociadosTest() throws Exception{
+<span class="fc" id="L157">        when(proveedorService.eliminar(id)).thenThrow(badRequestExceptionProveedorConProductos);</span>
+<span class="fc" id="L158">        mockMvc.perform(delete(&quot;/api/v1/proveedores/{id}&quot;, id))</span>
+<span class="fc" id="L159">                .andExpect(status().isBadRequest())</span>
+<span class="fc" id="L160">                .andExpect(jsonPath(&quot;$.error&quot;).value(badRequestExceptionProveedorConProductos.getMessage()));</span>
+<span class="fc" id="L161">        verify(proveedorService).eliminar(id);</span>
+<span class="fc" id="L162">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

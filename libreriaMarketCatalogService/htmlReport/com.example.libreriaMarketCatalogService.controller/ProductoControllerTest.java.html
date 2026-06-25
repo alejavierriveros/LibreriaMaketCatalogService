@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProductoControllerTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">com.example.libreriaMarketCatalogService.controller</a> &gt; <span class="el_source">ProductoControllerTest.java</span></div><h1>ProductoControllerTest.java</h1><pre class="source lang-java linenums">package com.example.libreriaMarketCatalogService.controller;
+
+import com.example.libreriaMarketCatalogService.dto.ProductoInputDTO;
+import com.example.libreriaMarketCatalogService.dto.ProductoResponseDTO;
+import com.example.libreriaMarketCatalogService.exceptions.BadRequestException;
+import com.example.libreriaMarketCatalogService.exceptions.RecursoNoEncontradoException;
+import com.example.libreriaMarketCatalogService.model.Producto;
+import com.example.libreriaMarketCatalogService.service.ProductoService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(controllers = ProductoController.class, excludeAutoConfiguration = ServletWebSecurityAutoConfiguration.class)
+<span class="fc" id="L28">public class ProductoControllerTest {</span>
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private ProductoService productoService;
+
+    private ProductoInputDTO productoInputDTO;
+    private ProductoResponseDTO productoResponseDTOuno;
+    private ProductoResponseDTO productoResponseDTOdos;
+
+<span class="fc" id="L42">    private final RecursoNoEncontradoException recursoNoEncontradoExceptionProducto = new RecursoNoEncontradoException(&quot;Producto no encontrado&quot;);</span>
+<span class="fc" id="L43">    private final RecursoNoEncontradoException recursoNoEncontradoExceptionProveedor = new RecursoNoEncontradoException(&quot;Proveedor no existe&quot;);</span>
+<span class="fc" id="L44">    private final BadRequestException badRequestExceptionProductoYaExiste = new BadRequestException(&quot;Ya existe un producto con ese ISBN&quot;);</span>
+<span class="fc" id="L45">    private final BadRequestException badRequestExceptionISBNRegistrado = new BadRequestException(&quot;ISBN ya registrado&quot;);</span>
+    Long id;
+    @BeforeEach
+    void setUp(){
+<span class="fc" id="L49">        id = 3L;</span>
+        //para actualizar tiene los mismos datos por conveniencia
+<span class="fc" id="L51">        productoInputDTO = new ProductoInputDTO(&quot;Java for Dummies&quot;, &quot;Terry A. Burd&quot;, &quot;Wiley&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L52">                2022, 26725.0, &quot;978-111-98-6164-5&quot;, &quot;desc&quot;,1L, &quot;Distribuidora Libros&quot;);</span>
+
+<span class="fc" id="L54">        productoResponseDTOuno = new ProductoResponseDTO(3L,&quot;Java for Dummies&quot;, &quot;Terry A. Burd&quot;, &quot;Wiley&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L55">                2022, 26725.0, &quot;978-111-98-6164-5&quot;, &quot;desc&quot;,1L, &quot;Distribuidora Libros&quot;);</span>
+
+<span class="fc" id="L57">        productoResponseDTOdos = new ProductoResponseDTO(5L, &quot;Clean Code&quot;, &quot;Robert C. Martin&quot;, &quot;Prentice Hall&quot;, &quot;Programación&quot;,</span>
+<span class="fc" id="L58">                2008, 30000.0, &quot;978-013-23-5088-4&quot;, &quot;desc&quot;,2L, &quot;Proveedor Test&quot;);</span>
+<span class="fc" id="L59">    }</span>
+
+    @Test
+    void listAllTest() throws Exception{
+<span class="fc" id="L63">        when(productoService.listar()).thenReturn(List.of(productoResponseDTOuno,productoResponseDTOdos));</span>
+<span class="fc" id="L64">        mockMvc.perform(get(&quot;/api/v1/productos&quot;))</span>
+<span class="fc" id="L65">                .andExpect(status().isOk())</span>
+<span class="fc" id="L66">                .andExpect(jsonPath(&quot;$.length()&quot;).value(2))</span>
+<span class="fc" id="L67">                .andExpect(jsonPath(&quot;$[0].titulo&quot;).value(&quot;Java for Dummies&quot;))</span>
+<span class="fc" id="L68">                .andExpect(jsonPath(&quot;$[1].titulo&quot;).value(&quot;Clean Code&quot;));</span>
+<span class="fc" id="L69">        verify(productoService).listar();</span>
+<span class="fc" id="L70">    }</span>
+
+    @Test
+    void findAllEmptyTest() throws Exception{
+<span class="fc" id="L74">        when(productoService.listar()).thenReturn(List.of());</span>
+<span class="fc" id="L75">        mockMvc.perform(get(&quot;/api/v1/productos&quot;))</span>
+<span class="fc" id="L76">                .andExpect(status().isNoContent());</span>
+<span class="fc" id="L77">        verify(productoService).listar();</span>
+<span class="fc" id="L78">    }</span>
+
+    @Test
+    void findByIdTest() throws Exception{
+<span class="fc" id="L82">        when(productoService.obtenerPorId(id)).thenReturn(productoResponseDTOuno);</span>
+<span class="fc" id="L83">        mockMvc.perform(get(&quot;/api/v1/productos/{id}&quot;, id))</span>
+<span class="fc" id="L84">                .andExpect(status().isOk())</span>
+<span class="fc" id="L85">                .andExpect(jsonPath(&quot;$.id&quot;).value(3))</span>
+<span class="fc" id="L86">                .andExpect(jsonPath(&quot;$.titulo&quot;).value(&quot;Java for Dummies&quot;));</span>
+<span class="fc" id="L87">        verify(productoService).obtenerPorId(id);</span>
+<span class="fc" id="L88">    }</span>
+
+    @Test
+    void findByIdNotFound() throws Exception{
+<span class="fc" id="L92">        when(productoService.obtenerPorId(id)).thenThrow(recursoNoEncontradoExceptionProducto);</span>
+<span class="fc" id="L93">        mockMvc.perform(get(&quot;/api/v1/productos/{id}&quot;, id))</span>
+<span class="fc" id="L94">                .andExpect(status().isNotFound())</span>
+<span class="fc" id="L95">                .andExpect(jsonPath(&quot;$.error&quot;).value(recursoNoEncontradoExceptionProducto.getMessage()));</span>
+<span class="fc" id="L96">        verify(productoService).obtenerPorId(id);</span>
+<span class="fc" id="L97">    }</span>
+
+    @Test
+    void crearTest() throws Exception{
+<span class="fc" id="L101">        when(productoService.guardar(any(ProductoInputDTO.class))).thenReturn(productoResponseDTOuno);</span>
+<span class="fc" id="L102">        mockMvc.perform(post(&quot;/api/v1/productos&quot;)</span>
+<span class="fc" id="L103">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L104">                        .content(objectMapper.writeValueAsString(productoInputDTO)))</span>
+<span class="fc" id="L105">                .andExpect(status().isCreated())</span>
+<span class="fc" id="L106">                .andExpect(jsonPath(&quot;$.titulo&quot;).value(productoInputDTO.getTitulo()));</span>
+<span class="fc" id="L107">        verify(productoService).guardar(productoInputDTO);</span>
+<span class="fc" id="L108">    }</span>
+
+    @Test
+    void crearProductoYaExisteTests() throws Exception{
+<span class="fc" id="L112">        when(productoService.guardar(any(ProductoInputDTO.class))).thenThrow(badRequestExceptionProductoYaExiste);</span>
+<span class="fc" id="L113">        mockMvc.perform(post(&quot;/api/v1/productos&quot;)</span>
+<span class="fc" id="L114">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L115">                        .content(objectMapper.writeValueAsString(productoInputDTO)))</span>
+<span class="fc" id="L116">                .andExpect(status().isBadRequest())</span>
+<span class="fc" id="L117">                .andExpect(jsonPath(&quot;$.error&quot;).value(badRequestExceptionProductoYaExiste.getMessage()));</span>
+<span class="fc" id="L118">        verify(productoService).guardar(any(ProductoInputDTO.class));</span>
+<span class="fc" id="L119">    }</span>
+
+    @Test
+    void crearProveedorNoExiste() throws Exception{
+<span class="fc" id="L123">        when(productoService.guardar(any(ProductoInputDTO.class))).thenThrow(recursoNoEncontradoExceptionProveedor);</span>
+<span class="fc" id="L124">        mockMvc.perform(post(&quot;/api/v1/productos&quot;)</span>
+<span class="fc" id="L125">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L126">                        .content(objectMapper.writeValueAsString(productoInputDTO)))</span>
+<span class="fc" id="L127">                .andExpect(status().isNotFound())</span>
+<span class="fc" id="L128">                .andExpect(jsonPath(&quot;$.error&quot;).value(recursoNoEncontradoExceptionProveedor.getMessage()));</span>
+<span class="fc" id="L129">        verify(productoService).guardar(any(ProductoInputDTO.class));</span>
+<span class="fc" id="L130">    }</span>
+
+    @Test
+    void actualizarTest() throws Exception{
+<span class="fc" id="L134">        when(productoService.actualizar(any(Long.class), any(Producto.class), any(Long.class))).thenReturn(productoResponseDTOuno);</span>
+<span class="fc" id="L135">        mockMvc.perform(put(&quot;/api/v1/productos/{id}&quot;, id)</span>
+<span class="fc" id="L136">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L137">                        .content(objectMapper.writeValueAsString(productoInputDTO)))</span>
+<span class="fc" id="L138">                .andExpect(status().isOk())</span>
+<span class="fc" id="L139">                .andExpect(jsonPath(&quot;$.id&quot;).value(id));</span>
+<span class="fc" id="L140">        verify(productoService).actualizar(any(Long.class), any(Producto.class), any(Long.class));</span>
+<span class="fc" id="L141">    }</span>
+
+    @Test
+    void actualizarProductoNoEncontradoTest() throws Exception{
+<span class="fc" id="L145">        when(productoService.actualizar(any(Long.class), any(Producto.class), any(Long.class))).thenThrow(recursoNoEncontradoExceptionProducto);</span>
+<span class="fc" id="L146">        mockMvc.perform(put(&quot;/api/v1/productos/{id}&quot;, id)</span>
+<span class="fc" id="L147">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L148">                        .content(objectMapper.writeValueAsString(productoInputDTO)))</span>
+<span class="fc" id="L149">                .andExpect(status().isNotFound())</span>
+<span class="fc" id="L150">                .andExpect(jsonPath(&quot;$.error&quot;).value(recursoNoEncontradoExceptionProducto.getMessage()));</span>
+<span class="fc" id="L151">        verify(productoService).actualizar(any(Long.class), any(Producto.class), any(Long.class));</span>
+<span class="fc" id="L152">    }</span>
+
+    @Test
+    void actualizarISBNyaRegistradoTest() throws Exception{
+<span class="fc" id="L156">        when(productoService.actualizar(any(Long.class), any(Producto.class), any(Long.class))).thenThrow(badRequestExceptionISBNRegistrado);</span>
+<span class="fc" id="L157">        mockMvc.perform(put(&quot;/api/v1/productos/{id}&quot;, id)</span>
+<span class="fc" id="L158">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L159">                        .content(objectMapper.writeValueAsString(productoInputDTO)))</span>
+<span class="fc" id="L160">                .andExpect(status().isBadRequest())</span>
+<span class="fc" id="L161">                .andExpect(jsonPath(&quot;$.error&quot;).value(badRequestExceptionISBNRegistrado.getMessage()));</span>
+<span class="fc" id="L162">        verify(productoService).actualizar(any(Long.class), any(Producto.class), any(Long.class));</span>
+<span class="fc" id="L163">    }</span>
+
+    @Test
+    void actualizarProveedorNoEncontradoTest() throws Exception{
+<span class="fc" id="L167">        when(productoService.actualizar(any(Long.class), any(Producto.class), any(Long.class))).thenThrow(recursoNoEncontradoExceptionProveedor);</span>
+<span class="fc" id="L168">        mockMvc.perform(put(&quot;/api/v1/productos/{id}&quot;, id)</span>
+<span class="fc" id="L169">                        .contentType(MediaType.APPLICATION_JSON)</span>
+<span class="fc" id="L170">                        .content(objectMapper.writeValueAsString(productoInputDTO)))</span>
+<span class="fc" id="L171">                .andExpect(status().isNotFound())</span>
+<span class="fc" id="L172">                .andExpect(jsonPath(&quot;$.error&quot;).value(recursoNoEncontradoExceptionProveedor.getMessage()));</span>
+<span class="fc" id="L173">        verify(productoService).actualizar(any(Long.class), any(Producto.class), any(Long.class));</span>
+<span class="fc" id="L174">    }</span>
+
+    @Test
+    void eliminarTest() throws Exception{
+<span class="fc" id="L178">        when(productoService.eliminar(id)).thenReturn(true);</span>
+<span class="fc" id="L179">        mockMvc.perform(delete(&quot;/api/v1/productos/{id}&quot;, id))</span>
+<span class="fc" id="L180">                .andExpect(status().isNoContent());</span>
+<span class="fc" id="L181">        verify(productoService).eliminar(id);</span>
+<span class="fc" id="L182">    }</span>
+
+    @Test
+    void eliminarNoEncontradoTest() throws Exception{
+<span class="fc" id="L186">        when(productoService.eliminar(id)).thenThrow(recursoNoEncontradoExceptionProducto);</span>
+<span class="fc" id="L187">        mockMvc.perform(delete(&quot;/api/v1/productos/{id}&quot;, id))</span>
+<span class="fc" id="L188">                .andExpect(status().isNotFound())</span>
+<span class="fc" id="L189">                .andExpect(jsonPath(&quot;$.error&quot;).value(recursoNoEncontradoExceptionProducto.getMessage()));</span>
+<span class="fc" id="L190">        verify(productoService).eliminar(id);</span>
+<span class="fc" id="L191">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
